@@ -24,7 +24,7 @@ Configurações: idioma e uma chave por plataforma. As chaves ficam no `.env` lo
 
 ## Estado atual
 
-Funciona: o montador de prompt (completo, compacto e por tomada), o servidor local com as chaves no `.env`, o registro de modelos, nove plataformas, estimativa de custo, janela de confirmação, fila de um pedido por vez, download do MP4, lista de gerações com monitor e teste de chave.
+Funciona: o montador de prompt (completo, compacto e por tomada), o servidor local com as chaves no `.env`, o registro de modelos, nove plataformas, estimativa de custo, janela de confirmação, fila de um pedido por vez, download do MP4, lista de gerações com monitor, teste de chave, e imagens e música feitas neste computador pelo ComfyUI.
 
 Ainda não foi feito: biblioteca com filtros e comparação lado a lado, agente que preenche o formulário a partir de um pedido livre, imagens de referência, Leonardo.
 
@@ -69,6 +69,31 @@ Para desenvolver a interface: `npm run server` num terminal e `npm run dev` em o
 | Kling | Kling 4.0 Flash, Kling 4.0 | não | não |
 | Google | Gemini Omni 1.1 Flash (o modelo decide a duração) | não | não |
 | Krea | Veo 3.1; Seedance listado, sem preço conferido | sim | não |
+
+## Imagens neste computador
+
+A aba **Mídia** tem duas partes, Imagens e Música. Imagens faz as imagens paradas do filme na sua própria máquina, pelo [ComfyUI](https://github.com/comfyanonymous/ComfyUI), sem custo: a referência de cada personagem, cada cenário vazio e o primeiro e o último quadro de cada tomada. O texto de cada imagem é o mesmo que o prompt "por tomada + keyframes" mostra.
+
+O TRSR Video pergunta ao ComfyUI quais arquivos de modelo ele tem e só oferece os modelos completos:
+
+| Modelo | Uso | Arquivos (qualquer precisão) |
+| --- | --- | --- |
+| Z-Image Turbo | personagens e cenários, 8 passos | `diffusion_models/z_image_turbo*`, `text_encoders/qwen_3_4b*`, `vae/ae.safetensors` |
+| MOSS-Image | personagens e cenários, 25 passos | `diffusion_models/moss_image*`, `text_encoders/qwen3.5_9b*`, `vae/flux2-vae*` |
+| Qwen-Image-Edit 2511 | quadros das tomadas, a partir do cenário e de até 2 referências de personagem | `diffusion_models/qwen_image_edit_2511*`, `text_encoders/qwen_2.5_vl_7b*`, `vae/qwen_image_vae*`, opcional `loras/Qwen-Image-Edit-2511-Lightning-4steps*` (4 passos em vez de 40) |
+
+Os grafos são os dos modelos de fluxo do próprio ComfyUI para cada modelo. O ComfyUI é esperado em `http://127.0.0.1:8188`; ponha `COMFYUI_URL` no `.env` se ele roda em outro endereço. As imagens ficam em `data/images`. Uma imagem é feita por vez e nada é reenviado sozinho. Tomada com 3 ou mais personagens ainda não é gerada. A licença de cada modelo vale para o que ele gera.
+
+As imagens ainda não são enviadas às plataformas de vídeo: hoje servem para conferir o visual e para fluxos de primeiro/último quadro fora do app.
+
+## Música
+
+Na aba **Mídia**, Música dá uma trilha ao filme de dois jeitos:
+
+- **Gerar** neste computador com o Stable Audio 3 Medium pelo ComfyUI, sem custo. A descrição segue o tom do filme (comédia, emotivo, suspense, ação, encantamento), a duração é a do filme e a música é sempre instrumental. Dá para reescrever a descrição antes de gerar. Arquivos: `checkpoints/stable_audio_3_medium*` e `text_encoders/t5gemma_b_b_ul2*`.
+- **Adicionar** um arquivo seu (mp3, wav, flac, ogg, m4a ou aac, até 40 MB).
+
+A música marcada "em uso" toca junto com o vídeo no monitor. "Baixar MP4 com música" coloca a música por baixo do som do vídeo com o [ffmpeg](https://ffmpeg.org) neste computador: a imagem é copiada sem alteração, a música some no fim e o MP4 original fica como está. Ponha `FFMPEG_PATH` no `.env` se o ffmpeg não estiver no PATH. Os direitos da música que você adiciona são responsabilidade sua; a licença do modelo vale para o que ele gera.
 
 ## Modelos e preços
 

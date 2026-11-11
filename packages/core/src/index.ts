@@ -9,6 +9,8 @@ export * from "./checks";
 export {sections,type Block} from "./prompt/single";
 export {perShot,framing} from "./prompt/perShot";
 export {metaPrompt} from "./prompt/meta";
+export {MUSIC,MUSIC_MAX_S,musicText,musicBpm,musicPrompt,type MusicTone} from "./prompt/music";
+export {imageTasks,imageSize,PLATE_ONLY,type ImageTask,type ImageKind} from "./prompt/images";
 export {compactPrompt,promptFor,type PromptMode,type ChosenPrompt} from "./prompt/compact";
 
 /** The blocks of the mode the state is in: "full" = single prompt, "shots" = per shot + keyframes. */

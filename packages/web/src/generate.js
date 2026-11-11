@@ -147,7 +147,7 @@ export function initGenerate({get,apply,t,esc,save}){
     // The amount the person saw travels with the OK; the server refuses if its own number differs.
     const r=await api("POST","/api/generate",{state:get(),modelId:g.modelId,resolution:g.resolution,audio:g.audio,promptMode:g.promptMode,confirmed:true,estimateUSD:quote.estimate.usd,confirmOverLimit:overOk}).catch(()=>null);
     sending=false;
-    if(r&&r.status===202){genDlg.close();viewId=r.json.id;await poll();if(window.trsrShow)window.trsrShow($("#lib"));$("#stage").scrollIntoView({block:"nearest"});return}
+    if(r&&r.status===202){genDlg.close();still=null;viewId=r.json.id;await poll();if(window.trsrShow)window.trsrShow($("#lib"));$("#stage").scrollIntoView({block:"nearest"});return}
     if(r&&r.json&&r.json.quote)quote=r.json.quote;
     quoteMsg=!r?t("gOffline"):r.json&&r.json.error==="estimateChanged"?t("gChanged"):r.json&&r.json.error==="noKey"?t("gNoKey")((provider(model().provider)||{}).label||""):"";
     if(r&&r.json&&r.json.error==="noKey")await loadModels().catch(()=>{});
@@ -256,9 +256,16 @@ export function initGenerate({get,apply,t,esc,save}){
     return h+"</div></article>";
   }
   /* ---------- monitor: the video being watched, the one being generated, or an empty frame ---------- */
-  let viewId=null,stageKey="";
+  let viewId=null,stageKey="",still=null;
   function updateViewer(){
     const st=$("#stage"),S=get();if(!st)return;
+    // A still image chosen in the Images tab stays on the monitor until a video is chosen.
+    if(still){
+      st.style.aspectRatio=still.ar;st.style.setProperty("--arn",String(still.ar.split("/").reduce((a,b)=>a/b)));
+      const k="still:"+still.url;if(k===stageKey)return;stageKey=k;
+      st.innerHTML='<img src="'+esc(still.url)+'" alt="'+esc(still.label)+'">';
+      $("#stageMeta").innerHTML="<b>"+esc(still.label)+"</b> / "+esc(still.meta);return;
+    }
     const j=jobs.find(x=>x.id===viewId)||jobs.find(x=>ACTIVE.includes(x.status))||jobs.find(x=>x.videoUrl)||null;
     const ar=j?j.size[0]+"/"+j.size[1]:(aspectKey(S.aspect)||"16:9").replace(":","/");
     st.style.aspectRatio=ar;
@@ -299,7 +306,7 @@ export function initGenerate({get,apply,t,esc,save}){
   }
   $("#lib").addEventListener("click",async e=>{
     const b=e.target.closest("button");if(!b)return;
-    if(b.dataset.view){viewId=b.dataset.view;renderJobs();updateViewer();$("#stage").scrollIntoView({block:"nearest"});return}
+    if(b.dataset.view){still=null;viewId=b.dataset.view;renderJobs();updateViewer();$("#stage").scrollIntoView({block:"nearest"});return}
     if(b.id==="pKey")return openSettings();
     if(b.id==="pResume"){await api("POST","/api/queue/resume",{});return poll()}
     const id=b.dataset.reuse||b.dataset.copyp||b.dataset.cancel;if(!id)return;
@@ -324,5 +331,5 @@ export function initGenerate({get,apply,t,esc,save}){
     refresh();if(online)poll();
   }).catch(()=>{online=false;refresh()});
 
-  return {refresh};
+  return {refresh,showStill(s){still=s;updateViewer();$("#stage").scrollIntoView({block:"nearest"})}};
 }

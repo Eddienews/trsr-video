@@ -24,7 +24,7 @@ Settings: language (Portuguese or English) and one key per platform. Keys stay i
 
 ## Current state
 
-Working: the prompt builder (full, compact and per shot), the local server with keys in `.env`, the model registry, nine platforms, cost estimate, confirmation window, a queue that runs one request at a time, MP4 download, the list of generations with a monitor, and a key test.
+Working: the prompt builder (full, compact and per shot), the local server with keys in `.env`, the model registry, nine platforms, cost estimate, confirmation window, a queue that runs one request at a time, MP4 download, the list of generations with a monitor, a key test, and images and music made on this computer through ComfyUI.
 
 Not done yet: a library with filters and side-by-side comparison, an agent that fills the form from a free-text request, reference images, Leonardo.
 
@@ -71,6 +71,31 @@ To work on the interface: `npm run server` in one terminal and `npm run dev` in 
 | Kling | Kling 4.0 Flash, Kling 4.0 | no | no |
 | Google | Gemini Omni 1.1 Flash (the model picks the duration) | no | no |
 | Krea | Veo 3.1; Seedance listed, price not verified | yes | no |
+
+## Images on this computer
+
+The **Media** tab has two parts, Images and Music. Images makes the still images of the film on your own machine, through [ComfyUI](https://github.com/comfyanonymous/ComfyUI), at no cost: one reference per character, one empty plate per set, and the first and last frame of each shot. The text of each image is the same text the "per shot + keyframes" prompt shows.
+
+TRSR Video asks ComfyUI which model files it has and offers only the models that are complete:
+
+| Model | Used for | Files (any precision) |
+| --- | --- | --- |
+| Z-Image Turbo | characters and sets, 8 steps | `diffusion_models/z_image_turbo*`, `text_encoders/qwen_3_4b*`, `vae/ae.safetensors` |
+| MOSS-Image | characters and sets, 25 steps | `diffusion_models/moss_image*`, `text_encoders/qwen3.5_9b*`, `vae/flux2-vae*` |
+| Qwen-Image-Edit 2511 | shot frames, from the set plate plus up to 2 character references | `diffusion_models/qwen_image_edit_2511*`, `text_encoders/qwen_2.5_vl_7b*`, `vae/qwen_image_vae*`, optional `loras/Qwen-Image-Edit-2511-Lightning-4steps*` (4 steps instead of 40) |
+
+The graphs are the ones of ComfyUI's own workflow templates for each model. ComfyUI is expected at `http://127.0.0.1:8188`; set `COMFYUI_URL` in `.env` if it runs somewhere else. Images are kept in `data/images`. One image is made at a time and nothing is sent again on its own. A shot with 3 or more characters is not generated yet. Each model's own license applies to what it makes.
+
+The images are not sent to the video platforms yet: today they are for checking the look, and for first/last-frame workflows outside the app.
+
+## Music
+
+In the **Media** tab, Music gives the film a soundtrack in two ways:
+
+- **Generate** it on this computer with Stable Audio 3 Medium through ComfyUI, at no cost. The description follows the tone of the film (comedy, heartfelt, suspense, action, wonder), the length is the length of the film, and it is always instrumental. You can rewrite the description before generating. Files: `checkpoints/stable_audio_3_medium*` and `text_encoders/t5gemma_b_b_ul2*`.
+- **Add** a file of your own (mp3, wav, flac, ogg, m4a or aac, up to 40 MB).
+
+The track marked "in use" plays together with the video on the monitor. "Download MP4 with music" puts it under the video's own sound with [ffmpeg](https://ffmpeg.org) on this computer: the picture is copied untouched, the music fades out at the end, and the original MP4 stays as it is. Set `FFMPEG_PATH` in `.env` if ffmpeg is not on the PATH. You are responsible for the rights of the music you add; the model's own license applies to what it makes.
 
 ## Models and prices
 

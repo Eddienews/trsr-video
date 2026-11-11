@@ -1,12 +1,15 @@
 import express from "express";
 import path from "node:path";
 import {existsSync} from "node:fs";
-import {plain,total,promptFor,type PromptMode,validateForModel,estimateCost,pickSize,fitToModel,resolutionsFor,type State,type ModelEntry} from "@trsr-video/core";
+import {musicPrompt,imageTasks,imageSize,plain,total,promptFor,type PromptMode,validateForModel,estimateCost,pickSize,fitToModel,resolutionsFor,type State,type ModelEntry} from "@trsr-video/core";
 import type {EnvFile} from "./env";
 import type {Registry} from "./registry";
 import type {JobQueue,Job} from "./jobs";
+import {type Comfy,localKind} from "./local/comfy";
+import type {ImageStore,LocalImage} from "./local/images";
+import type {Ffmpeg} from "./local/ffmpeg";
 
-export interface AppDeps{env:EnvFile;registry:Registry;queue:JobQueue;checkKey?:(provider:string,key:string)=>Promise<{result:"ok"|"invalid"|"unknown";message?:string;balanceUSD?:number}>;webDir?:string;videosDir:string;version:string}
+export interface AppDeps{env:EnvFile;registry:Registry;queue:JobQueue;checkKey?:(provider:string,key:string)=>Promise<{result:"ok"|"invalid"|"unknown";message?:string;balanceUSD?:number}>;webDir?:string;videosDir:string;version:string;local?:{comfy:Comfy;images:ImageStore;ffmpeg:Ffmpeg}}
 const LIMITS={perGeneration:"LIMIT_PER_GENERATION_USD",perDay:"LIMIT_PER_DAY_USD"} as const;
 
 export function createApp(d:AppDeps){
@@ -21,6 +24,8 @@ export function createApp(d:AppDeps){
       return void res.status(415).json({error:"jsonOnly"});
     next();
   });
+  // A music file comes as base64 inside JSON, so this one route takes a bigger body.
+  app.use("/api/local/music/upload",express.json({limit:"60mb"}));
   app.use(express.json({limit:"2mb"}));
 
   const model=(id:unknown)=>d.registry.models.find(m=>m.id===id);
@@ -110,6 +115,73 @@ export function createApp(d:AppDeps){
     res.status(409).json({error:r});
   });
   app.post("/api/queue/resume",(_q,res)=>{d.queue.resume();res.json({paused:d.queue.paused})});
+
+  /* ---------- images made on this computer (ComfyUI): free, so no cost window ---------- */
+  if(d.local){
+    const {comfy,images,ffmpeg}=d.local;
+    const project=(S:State)=>(S.title||"").trim()||"Untitled";
+    const pubI=(i:LocalImage)=>({...i,url:i.file?"/images/"+i.file:null});
+    app.get("/api/local/status",async(_q,res)=>void res.json({...await comfy.status(),ffmpeg:await ffmpeg.available()}));
+    app.get("/api/local/images",(req,res)=>void res.json({images:images.list(typeof req.query.project==="string"?req.query.project:undefined).filter(i=>i.kind!=="music").map(pubI)}));
+    // The prompt is built here from the film, the same text the "per shot + keyframes" prompt shows.
+    app.post("/api/local/images",async(req,res)=>{
+      const b=req.body||{},S=b.state;
+      if(!isState(S)||typeof b.taskId!=="string"||typeof b.modelId!=="string")return void res.status(400).json({error:"badRequest"});
+      const task=imageTasks(S).find(t=>t.id===b.taskId);
+      if(!task)return void res.status(404).json({error:"notFound"});
+      if(task.unsupported)return void res.status(422).json({error:task.unsupported});
+      if(!task.prompt.trim())return void res.status(422).json({error:"emptyPrompt"});
+      if(localKind(b.modelId)!==(task.kind==="keyframe"?"edit":"text"))return void res.status(422).json({error:"wrongModel"});
+      const st=await comfy.status();
+      if(!st.reachable)return void res.status(503).json({error:"unreachable",url:st.url});
+      const m=st.models.find(x=>x.id===b.modelId);
+      if(!m||!m.available)return void res.status(409).json({error:"modelMissing",missing:m?m.missing:[]});
+      const refs=task.needs.map(n=>images.latestDone(project(S),n)),lacking=task.needs.filter((_n,i)=>!refs[i]);
+      if(lacking.length)return void res.status(409).json({error:"missingRefs",missing:lacking});
+      const [width,height]=imageSize(S.aspect);
+      const seed=Number.isInteger(b.seed)&&b.seed>=0?b.seed:undefined;
+      res.status(202).json(pubI(images.add({project:project(S),taskId:task.id,kind:task.kind,label:task.label,modelId:b.modelId,prompt:task.prompt,width,height,refs:refs.map(r=>r!.id),seed})));
+    });
+    app.post("/api/local/images/:id/cancel",async(req,res)=>{
+      const r=await images.cancel(req.params.id);
+      if(r==="notFound")return void res.status(404).json({error:r});
+      if(r==="tooLate")return void res.status(409).json({error:r});
+      res.json(pubI(images.get(req.params.id)!));
+    });
+    /* ---------- music: made here to the tone of the film, or a file the person brings ---------- */
+    const AUDIO=["mp3","wav","flac","ogg","m4a","aac"];
+    app.get("/api/local/music",(req,res)=>void res.json({music:images.list(typeof req.query.project==="string"?req.query.project:undefined).filter(i=>i.kind==="music").map(pubI)}));
+    app.post("/api/local/music",async(req,res)=>{
+      const b=req.body||{},S=b.state;
+      if(!isState(S)||(b.prompt!==undefined&&typeof b.prompt!=="string"))return void res.status(400).json({error:"badRequest"});
+      const st=await comfy.status();
+      if(!st.reachable)return void res.status(503).json({error:"unreachable",url:st.url});
+      const m=st.models.find(x=>x.kind==="audio");
+      if(!m||!m.available)return void res.status(409).json({error:"modelMissing",missing:m?m.missing:[]});
+      const mp=musicPrompt(S,typeof b.prompt==="string"?b.prompt.slice(0,1500):undefined);
+      const seed=Number.isInteger(b.seed)&&b.seed>=0?b.seed:undefined;
+      res.status(202).json(pubI(images.add({project:project(S),taskId:"music",kind:"music",label:S.genre+" · "+mp.bpm+" BPM",modelId:m.id,prompt:mp.text,width:0,height:0,refs:[],seconds:mp.seconds,seed})));
+    });
+    app.post("/api/local/music/upload",(req,res)=>{
+      const b=req.body||{},name=typeof b.name==="string"?b.name.trim().slice(0,120):"",ext=(name.split(".").pop()||"").toLowerCase();
+      if(typeof b.project!=="string"||!b.project.trim()||!name||typeof b.data!=="string")return void res.status(400).json({error:"badRequest"});
+      if(!AUDIO.includes(ext))return void res.status(415).json({error:"notAudio",allowed:AUDIO});
+      const bytes=Buffer.from(b.data,"base64");
+      if(!bytes.length||bytes.length>40*1024*1024)return void res.status(413).json({error:"tooBig"});
+      res.status(201).json(pubI(images.addFile({project:b.project.trim(),label:name,ext,bytes})));
+    });
+    // The music goes under the video's own sound; the picture is copied untouched. The original MP4 stays as it is.
+    app.post("/api/jobs/:id/mix",async(req,res)=>{
+      const j=d.queue.get(req.params.id),mu=images.get(String(req.body?.musicId||""));
+      if(!j||!j.videoFile||!mu||mu.kind!=="music"||mu.status!=="done"||!mu.file)return void res.status(404).json({error:"notFound"});
+      if(!(await ffmpeg.available()))return void res.status(409).json({error:"noFfmpeg"});
+      const v=typeof req.body.volume==="number"?Math.max(0.05,Math.min(1.5,req.body.volume)):0.6,out=j.id+"-music.mp4";
+      try{await ffmpeg.mix(path.join(d.videosDir,j.videoFile),path.join(images.dir,mu.file),path.join(d.videosDir,out),{volume:v,durationS:j.durationS})}
+      catch(e){return void res.status(500).json({error:"mixFailed",message:String((e as Error).message).slice(0,300)})}
+      res.json({url:"/videos/"+out,name:(j.title||"video").replace(/[^\w.-]+/g,"_")+"-music.mp4"});
+    });
+    app.use("/images",express.static(images.dir,{fallthrough:false,index:false}));
+  }
 
   app.use("/videos",express.static(d.videosDir,{fallthrough:false,index:false}));
   if(d.webDir&&existsSync(path.join(d.webDir,"index.html")))app.use(express.static(d.webDir));

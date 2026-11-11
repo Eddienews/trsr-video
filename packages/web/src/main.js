@@ -2,7 +2,11 @@ import * as core from "@trsr-video/core";
 import {T} from "./i18n.js";
 import {G} from "./i18n-generate.js";
 import {initGenerate} from "./generate.js";
-Object.assign(T.pt,G.pt);Object.assign(T.en,G.en);
+import {initImages} from "./images.js";
+import {I} from "./i18n-images.js";
+import {initMusic} from "./music.js";
+import {M} from "./i18n-music.js";
+Object.assign(T.pt,G.pt,I.pt,M.pt);Object.assign(T.en,G.en,I.en,M.en);
 let gen=null;
 import {initUi} from "./ui.js";
 initUi();
@@ -89,7 +93,7 @@ function renderLive(){
   $("#prompt").innerHTML=blocks().map(([h,l])=>'<span class="h">==== '+esc(h)+" ====</span>"+(l.length?"\n"+esc(l.join("\n")):"")).join("\n\n");
   copyLabels();
   save();
-  if(gen)gen.refresh();
+  if(gen){gen.refresh();if(gen.images)gen.images.refresh();if(gen.music)gen.music.refresh()}
 }
 function renderAll(){renderStatic();renderLists();renderLive()}
 
@@ -152,3 +156,6 @@ gen=initGenerate({
   apply(next){const l=S.lang,g=S.gen;S=Object.assign(blank(),next);S.lang=l;if(g&&!next.gen)S.gen=g;prev={style:S.stylePreset,light:S.lightPreset,genre:S.genre};renderAll()},
   save
 });
+// Images made on this computer (ComfyUI): the tab only appears when the local server answers.
+gen.images=initImages({get:()=>S,t,esc,save,showStill:gen.showStill});
+gen.music=initMusic({get:()=>S,t,esc,save});

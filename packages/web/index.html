@@ -139,7 +139,7 @@ input[type="number"]{font-family:var(--font-mono)}
 .mon-head .lbl{margin:0}
 .monitor{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;container-type:size}
 .stage{position:relative;background-color:var(--stage);background-image:linear-gradient(oklch(1 0 0 / .04) 1px,transparent 1px),linear-gradient(90deg,oklch(1 0 0 / .04) 1px,transparent 1px);background-size:40px 40px;aspect-ratio:16/9;width:min(100cqw,calc(100cqh*var(--arn,1.7778)));border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;display:flex;align-items:center;justify-content:center}
-.stage video{width:100%;height:100%;object-fit:contain;background:#000}
+.stage video,.stage img{width:100%;height:100%;object-fit:contain;background:#000;display:block}
 .stage-msg{text-align:center;color:oklch(0.72 0.015 295);padding:16px;max-width:42ch;display:flex;flex-direction:column;align-items:center;gap:8px}
 .stage-msg b{font-size:1.15rem;font-weight:600;color:oklch(0.96 0.005 295)}
 .stage-msg .tc{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:3rem;font-weight:600;line-height:1;color:var(--accent)}
@@ -201,6 +201,39 @@ pre .h{color:oklch(0.8 0.15 70);font-weight:700}
 .job .err{margin:0;border-radius:var(--r-sm);padding:8px;font-size:12px;background:var(--danger-soft);color:var(--danger)}
 .job .actions{margin-top:0}
 .note{font-size:12px;color:var(--text-3);margin:6px 0}
+/* images made on this computer */
+.lstat{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 6px 6px 10px;margin:0 0 12px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--bg-sunken);font-size:12px}
+.lstat span{display:flex;align-items:center;gap:8px;min-width:0;overflow-wrap:anywhere}
+.lstat i{flex:none;width:8px;height:8px;border-radius:50%;background:var(--danger)}
+.lstat.ok i{background:var(--ok)}
+.imodels{margin:0 0 4px}
+.imodels label{display:flex;flex-direction:column;gap:4px;min-width:0}
+.imodels select{width:100%}
+.ih{margin:18px 0 8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3)}
+.igrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ishot{margin:0 0 12px}
+.ishot>.lbl{display:block;margin:0 0 4px}
+.icard{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-md);padding:8px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ithumb{all:unset;display:block;aspect-ratio:16/9;border-radius:var(--r-sm);overflow:hidden;background:var(--bg-sunken);position:relative}
+button.ithumb{cursor:pointer}
+button.ithumb:hover,button.ithumb:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.ithumb img{width:100%;height:100%;object-fit:cover;display:block}
+.ithumb.empty{border:1px dashed var(--line)}
+.ithumb .spin{position:absolute;inset:0;margin:auto;width:18px;height:18px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--accent);animation:ispin 1s linear infinite}
+@keyframes ispin{to{transform:rotate(360deg)}}
+.mfield{display:flex;flex-direction:column;gap:4px;margin:0 0 6px}
+.mfield textarea{width:100%;resize:vertical;font-family:var(--font-mono);font-size:12px}
+.mfield input[type=range]{width:100%;accent-color:var(--accent)}
+.mtrack{margin:0 0 8px}
+.mtrack.sel{border-color:var(--accent)}
+.mtrack audio{width:100%;height:32px}
+#mus .err{border-radius:var(--r-sm);padding:6px 8px;font-size:12px;background:var(--danger-soft);color:var(--danger);margin:6px 0}
+label.btn{cursor:pointer}
+.irow{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;font-size:12px;min-width:0}
+.irow b{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icard .note,.icard .err{margin:0;font-size:11px}
+#img .err{border-radius:var(--r-sm);padding:6px 8px;font-size:12px;background:var(--danger-soft);color:var(--danger);margin:6px 0}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
 
 /* ---------- timeline ---------- */
 .timeline{flex:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:4px 12px 8px}
@@ -393,6 +426,7 @@ summary{cursor:pointer;font-weight:500;color:var(--text-2)}
   <aside class="panel right" id="out">
     <nav class="ptabs">
       <button type="button" data-rtab="library" data-t="libTitle"></button>
+      <button type="button" data-rtab="images" data-t="imgTab" hidden></button>
       <button type="button" data-rtab="prompt" data-t="outTitle"></button>
       <button type="button" data-rtab="checks"><span data-t="rChecks"></span><span class="score" id="score"></span></button>
     </nav>
@@ -400,6 +434,14 @@ summary{cursor:pointer;font-weight:500;color:var(--text-2)}
       <div class="pane" data-rtab-id="library" id="lib">
         <div class="hint" id="libHint"></div>
         <div class="jobs" id="jobs"></div>
+      </div>
+      <div class="pane" data-rtab-id="images" id="media">
+        <div class="seg" id="mseg" style="margin:0 0 12px">
+          <button type="button" data-media="img" data-t="mdImages" aria-pressed="true"></button>
+          <button type="button" data-media="mus" data-t="mdMusic" aria-pressed="false"></button>
+        </div>
+        <div id="img"></div>
+        <div id="mus" hidden></div>
       </div>
       <div class="pane col" data-rtab-id="prompt">
         <div class="seg" role="tablist">

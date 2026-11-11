@@ -1,0 +1,36 @@
+// Interface text of the Music part of the Media tab.
+export const M={pt:{
+  imgTab:"Mídia",mdImages:"Imagens",mdMusic:"Música",
+  musHint:"Música para o filme: gerada neste computador no tom do vídeo (ComfyUI, Stable Audio 3), sem custo, ou um arquivo seu.",
+  musDesc:tone=>"Descrição da música (tom: "+tone+")",
+  musUseTone:"Voltar ao texto do tom",
+  musInfo:(bpm,s)=>bpm+" BPM · "+s+" s, a duração do filme. Sempre instrumental.",
+  musMake:"Gerar música",musAdd:"Adicionar arquivo",
+  musNoModel:"O modelo de música não foi encontrado no ComfyUI.",
+  musTracks:"Músicas deste filme",musNone:"Nenhuma música ainda. Gere uma ou adicione um arquivo.",
+  musUse:"Usar no filme",musStop:"Não usar",musUsing:"Em uso",musYours:"Arquivo seu",
+  musWith:"Com o vídeo",musVol:"Volume da música",
+  musPlays:"A música em uso toca junto com o vídeo no monitor.",
+  musMix:"Baixar MP4 com música",musMixing:"Juntando...",
+  musNoVideo:"Ainda não há vídeo gerado deste filme para juntar com a música.",
+  musNoFfmpeg:"Para juntar a música ao MP4 é preciso ter o ffmpeg instalado neste computador.",
+  musMixOf:(m,s)=>"Usa o vídeo mais recente deste filme ("+m+", "+s+" s). A música entra por baixo do som do vídeo e o MP4 original fica como está.",
+  musErr:{failed:"A música não foi gerada.",notAudio:"Só arquivos de áudio: mp3, wav, flac, ogg, m4a ou aac.",tooBig:"Arquivo grande demais (o limite é 40 MB).",noFfmpeg:"O ffmpeg não foi encontrado neste computador.",mixFailed:"Não foi possível juntar a música ao vídeo.",notFound:"O vídeo ou a música não foi encontrado."}
+},en:{
+  imgTab:"Media",mdImages:"Images",mdMusic:"Music",
+  musHint:"Music for the film: made on this computer to the tone of the video (ComfyUI, Stable Audio 3), at no cost, or a file of yours.",
+  musDesc:tone=>"Music description (tone: "+tone+")",
+  musUseTone:"Back to the tone's text",
+  musInfo:(bpm,s)=>bpm+" BPM · "+s+" s, the length of the film. Always instrumental.",
+  musMake:"Generate music",musAdd:"Add a file",
+  musNoModel:"The music model was not found in ComfyUI.",
+  musTracks:"Music of this film",musNone:"No music yet. Generate one or add a file.",
+  musUse:"Use in the film",musStop:"Stop using",musUsing:"In use",musYours:"Your file",
+  musWith:"With the video",musVol:"Music volume",
+  musPlays:"The music in use plays with the video on the monitor.",
+  musMix:"Download MP4 with music",musMixing:"Mixing...",
+  musNoVideo:"There is no generated video of this film yet to mix with the music.",
+  musNoFfmpeg:"Putting the music into the MP4 needs ffmpeg installed on this computer.",
+  musMixOf:(m,s)=>"Uses the newest video of this film ("+m+", "+s+" s). The music goes under the video's own sound and the original MP4 stays as it is.",
+  musErr:{failed:"The music was not generated.",notAudio:"Audio files only: mp3, wav, flac, ogg, m4a or aac.",tooBig:"The file is too big (the limit is 40 MB).",noFfmpeg:"ffmpeg was not found on this computer.",mixFailed:"The music could not be mixed into the video.",notFound:"The video or the music was not found."}
+}};
