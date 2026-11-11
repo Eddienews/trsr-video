@@ -252,7 +252,12 @@ summary{cursor:pointer;font-weight:500;color:var(--text-2)}
 .dlg>.actions:last-child{justify-content:flex-end;margin:16px -20px -20px;padding:14px 20px;border-top:1px solid var(--line)}
 
 .bar{display:none}
+.legal{flex:none;display:flex;flex-wrap:wrap;justify-content:center;gap:2px 14px;font-size:11px;line-height:1.4;color:var(--text-3);padding:0 8px}
+.legal a{color:inherit;text-decoration:none}
+.legal a:hover{color:var(--text-2);text-decoration:underline}
+.legal b{font-weight:600;color:var(--text-2)}
 @media(max-width:1099px){
+  .legal{order:4;padding:8px}
   html,body{height:auto}
   body{display:flex;padding-bottom:76px}
   .workspace{display:flex;flex-direction:column;order:3}
@@ -434,6 +439,13 @@ summary{cursor:pointer;font-weight:500;color:var(--text-2)}
   <option value="SNAP ZOOM into the face."><option value="Gentle handheld drift."><option value="Slow orbit around the subject.">
   <option value="Crane up to reveal the whole scene.">
 </datalist>
+
+<footer class="legal">
+  <span><a href="https://northwindlab.com" target="_blank" rel="noopener">TRSR Video by NorthWindLab Studio</a></span>
+  <span>&copy; 2026 <b>NorthWind Lab LLC</b></span>
+  <span><a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">AGPL-3.0</a></span>
+  <span><a href="https://github.com/Eddienews/trsr-video" target="_blank" rel="noopener">Source code</a></span>
+</footer>
 
 <dialog id="genDlg"><div class="dlg" id="genBody"></div></dialog>
 <dialog id="setDlg"><div class="dlg" id="setBody"></div></dialog>

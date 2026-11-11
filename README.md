@@ -2,7 +2,7 @@
 
 **English** | [Português](README.pt-BR.md)
 
-AI video studio by NorthWindLab Studio. You build the film (story, characters, location, shots, look), pick the platform and the model, see the cost, confirm, and get the video. You can also just copy the prompt and generate somewhere else. AGPL-3.0 license.
+AI video studio by NorthWindLab Studio, the studio brand of **NorthWind Lab LLC**. You build the film (story, characters, location, shots, look), pick the platform and the model, see the cost, confirm, and get the video. You can also just copy the prompt and generate somewhere else. AGPL-3.0 license.
 
 ## Screenshots
 
@@ -131,4 +131,8 @@ GNU Affero General Public License, version 3, see [LICENSE](LICENSE), with the a
 - You can use, study, change and share TRSR Video.
 - If you share it, a modified version of it, or run a modified version as a service for other people, you must publish your source code under the same license.
 - Every copy and every modified version must keep a visible credit in the interface and in the documentation, linked to [northwindlab.com](https://northwindlab.com): "TRSR Video by NorthWindLab Studio" for unmodified copies, "Based on TRSR Video by NorthWindLab Studio" for modified ones.
-- "TRSR Video" and "NorthWindLab" are marks of NorthWindLab Studio. A modified version needs its own name and logo.
+- "TRSR Video" and "NorthWindLab" are marks of NorthWind Lab LLC. A modified version needs its own name and logo.
+
+---
+
+© 2026 **NorthWind Lab LLC** · [northwindlab.com](https://northwindlab.com) · contact@northwindlab.com

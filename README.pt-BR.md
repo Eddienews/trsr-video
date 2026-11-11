@@ -2,7 +2,7 @@
 
 [English](README.md) | **Português**
 
-Estúdio de vídeo com IA da NorthWindLab Studio. Você monta o filme (história, personagens, cenário, tomadas, visual), escolhe a plataforma e o modelo, vê o custo, confirma e recebe o vídeo. Também dá para só copiar o prompt e gerar em outro lugar. Licença AGPL-3.0.
+Estúdio de vídeo com IA da NorthWindLab Studio, a marca de estúdio da **NorthWind Lab LLC**. Você monta o filme (história, personagens, cenário, tomadas, visual), escolhe a plataforma e o modelo, vê o custo, confirma e recebe o vídeo. Também dá para só copiar o prompt e gerar em outro lugar. Licença AGPL-3.0.
 
 ## Telas
 
@@ -125,4 +125,8 @@ GNU Affero General Public License, versão 3, veja [LICENSE](LICENSE), com os te
 - Você pode usar, estudar, alterar e compartilhar o TRSR Video.
 - Se compartilhar o programa, uma versão modificada dele, ou rodar uma versão modificada como serviço para outras pessoas, precisa publicar o seu código-fonte sob a mesma licença.
 - Toda cópia e toda versão modificada precisa manter um crédito visível na interface e na documentação, com link para [northwindlab.com](https://northwindlab.com): "TRSR Video by NorthWindLab Studio" nas cópias sem alteração, "Based on TRSR Video by NorthWindLab Studio" nas modificadas.
-- "TRSR Video" e "NorthWindLab" são marcas da NorthWindLab Studio. Uma versão modificada precisa de nome e logo próprios.
+- "TRSR Video" e "NorthWindLab" são marcas da NorthWind Lab LLC. Uma versão modificada precisa de nome e logo próprios.
+
+---
+
+© 2026 **NorthWind Lab LLC** · [northwindlab.com](https://northwindlab.com) · contact@northwindlab.com
