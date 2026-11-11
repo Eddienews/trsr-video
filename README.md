@@ -2,7 +2,7 @@
 
 **English** | [Português](README.pt-BR.md)
 
-AI video studio by NorthWindLab Studio. You build the film (story, characters, location, shots, look), pick the platform and the model, see the cost, confirm, and get the video. You can also just copy the prompt and generate somewhere else. MIT license.
+AI video studio by NorthWindLab Studio. You build the film (story, characters, location, shots, look), pick the platform and the model, see the cost, confirm, and get the video. You can also just copy the prompt and generate somewhere else. AGPL-3.0 license.
 
 ## Screenshots
 
@@ -123,3 +123,12 @@ data/                   not in git: jobs.json and videos/
 ## Contributing
 
 Issues and pull requests are welcome. Run `npm test` and `npm run typecheck` before sending. For a new model or platform, link the documentation page each value came from in the registry entry (`docsUrl`), and leave `null` for anything you could not verify.
+
+## License and credit
+
+GNU Affero General Public License, version 3, see [LICENSE](LICENSE), with the additional terms in [NOTICE](NOTICE).
+
+- You can use, study, change and share TRSR Video.
+- If you share it, a modified version of it, or run a modified version as a service for other people, you must publish your source code under the same license.
+- Every copy and every modified version must keep a visible credit in the interface and in the documentation, linked to [northwindlab.com](https://northwindlab.com): "TRSR Video by NorthWindLab Studio" for unmodified copies, "Based on TRSR Video by NorthWindLab Studio" for modified ones.
+- "TRSR Video" and "NorthWindLab" are marks of NorthWindLab Studio. A modified version needs its own name and logo.

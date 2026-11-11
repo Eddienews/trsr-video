@@ -68,7 +68,7 @@ h2,h3{margin:0}
 .logo svg{flex:none;width:28px;height:28px}
 .wm{font-size:1.25rem;font-weight:700;letter-spacing:-.02em;line-height:1;white-space:nowrap}
 .ver{font-family:var(--font-mono);font-size:11px;font-weight:600;padding:3px 7px;border-radius:var(--r-sm);background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent);white-space:nowrap}
-.by{font-size:11px;color:var(--text-3);white-space:nowrap}
+.by{font-size:11px;color:var(--text-3);white-space:nowrap;text-decoration:none}.by:hover{color:var(--text-2)}
 .appbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex:none}
 
 /* ---------- buttons ---------- */
@@ -281,7 +281,7 @@ summary{cursor:pointer;font-weight:500;color:var(--text-2)}
     <svg viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="1" width="24" height="24" rx="6" fill="var(--accent)"/><path d="M10 8 L18 13 L10 18 Z" fill="var(--on-accent)"/><rect x="6" y="8" width="2" height="10" rx="1" fill="var(--on-accent)"/></svg>
     <div class="wm">TRSR Video</div>
     <span class="ver" id="ver"></span>
-    <span class="by" data-t="byline"></span>
+    <a class="by" data-t="byline" href="https://northwindlab.com" target="_blank" rel="noopener"></a>
   </div>
   <div class="appbar-right">
     <button type="button" class="btn ghost" id="openSettings" hidden><span aria-hidden="true">⚙</span> <span data-t="settings"></span></button>

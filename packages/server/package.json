@@ -2,7 +2,7 @@
   "name": "@trsr-video/server",
   "version": "0.2.0",
   "private": true,
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "scripts": { "start": "tsx src/main.ts" },
   "dependencies": { "@trsr-video/core": "*", "express": "^5.1.0", "tsx": "^4.19.0" },
