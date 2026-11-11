@@ -4,13 +4,31 @@
 
 AI video studio by NorthWindLab Studio. You build the film (story, characters, location, shots, look), pick the platform and the model, see the cost, confirm, and get the video. You can also just copy the prompt and generate somewhere else. MIT license.
 
+## Screenshots
+
+![The studio: project on the left, monitor and model picker in the middle, generations on the right, shot timeline at the bottom](docs/screenshots/studio.png)
+
+The studio. Project on the left, monitor with the platform, model and resolution picker in the middle, generations on the right, shot timeline at the bottom.
+
+![The confirmation window with the estimated cost](docs/screenshots/generate.png)
+
+The confirmation window. Nothing is sent or charged before you click "OK, generate".
+
+![Shots on the left and the prompt that will be sent on the right](docs/screenshots/shots-and-prompt.png)
+
+Shots and the prompt that goes to the model.
+
+![Settings: language and one key field per platform](docs/screenshots/settings.png)
+
+Settings: language (Portuguese or English) and one key per platform. Keys stay in the local `.env`.
+
 ## Current state
 
 Working: the prompt builder (full, compact and per shot), the local server with keys in `.env`, the model registry, nine platforms, cost estimate, confirmation window, a queue that runs one request at a time, MP4 download, the list of generations with a monitor, and a key test.
 
 Not done yet: a library with filters and side-by-side comparison, an agent that fills the form from a free-text request, reference images, Leonardo.
 
-The adapters were written from each platform's documentation and are covered by tests with simulated answers. Only the key test (Runware, Higgsfield and Krea) has run against the real APIs so far; the first generation on each platform is the real test.
+The adapters were written from each platform's documentation and are covered by tests with simulated answers. Against the real APIs so far: the key test (Runware, Higgsfield and Krea) and one generation on Runware (Seedance 2.0 Mini). On the other platforms, the first generation is the real test.
 
 The interface is available in Portuguese and English (PT / EN switch in the top bar). The prompt sent to the model is always in English.
 

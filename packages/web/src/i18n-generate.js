@@ -1,6 +1,6 @@
 /* Interface text for generation, settings and the library. */
 export const G={pt:{
-  h1:"Estúdio de vídeo",pFit:d=>"Ajustar as tomadas para "+d+" s",pPlatform:"Plataforma",s3:"Cenário",score:(a,b)=>a+"/"+b,rChecks:"Travas",rChecksHint:"O que o prompt precisa ter para o filme sair consistente. Clique numa trava aberta para ir ao campo.",
+  h1:"Estúdio de vídeo",byline:"por NorthWindLab Studio",vMonitor:"Monitor",sLang:"Idioma",pFit:d=>"Ajustar as tomadas para "+d+" s",pPlatform:"Plataforma",s3:"Cenário",score:(a,b)=>a+"/"+b,rChecks:"Travas",rChecksHint:"O que o prompt precisa ter para o filme sair consistente. Clique numa trava aberta para ir ao campo.",
   vEmpty:"Nenhum vídeo ainda",vHint:"Monte o filme nos painéis e clique em Gerar vídeo. O custo aparece antes e nada é cobrado sem o seu OK.",
   vHintOffline:"Sem o servidor local não dá para gerar aqui. Copie o prompt na aba Prompt e gere em outra plataforma.",
   vNote:"O vídeo gerado aparece no monitor e fica guardado em Gerações.",jView:"Ver no monitor",
@@ -45,7 +45,7 @@ export const G={pt:{
   errAllowed:"Valores aceitos: ",
   money:v=>"US$ "+v.toFixed(2).replace(".",",")
 },en:{
-  h1:"Video studio",pFit:d=>"Fit the shots to "+d+" s",pPlatform:"Platform",s3:"Location",score:(a,b)=>a+"/"+b,rChecks:"Locks",rChecksHint:"What the prompt needs for the film to come out consistent. Click an open lock to go to its field.",
+  h1:"Video studio",byline:"by NorthWindLab Studio",vMonitor:"Monitor",sLang:"Language",pFit:d=>"Fit the shots to "+d+" s",pPlatform:"Platform",s3:"Location",score:(a,b)=>a+"/"+b,rChecks:"Locks",rChecksHint:"What the prompt needs for the film to come out consistent. Click an open lock to go to its field.",
   vEmpty:"No video yet",vHint:"Build the film in the panels and click Generate video. The cost shows first and nothing is charged without your OK.",
   vHintOffline:"Without the local server nothing can be generated here. Copy the prompt in the Prompt tab and generate it on another platform.",
   vNote:"The generated video shows on the monitor and is kept in Generations.",jView:"Watch on the monitor",

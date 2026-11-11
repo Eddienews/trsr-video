@@ -178,28 +178,32 @@ export function initGenerate({get,apply,t,esc,save}){
 
   /* ---------- settings dialog ---------- */
   let setData=null,setMsg="",tests={};
-  const TEST_COLOR={ok:"var(--ok)",invalid:"var(--warn)"};
+  const TEST_COLOR={ok:"var(--ok)",invalid:"var(--danger)",unknown:"var(--warn)"};
   async function openSettings(){
     const r=await api("GET","/api/settings").catch(()=>null);
     if(!r||!r.ok){online=false;refresh();return}
     setData=r.json;setMsg="";renderSettings();setDlg.showModal();
   }
   function renderSettings(){
-    const d=setData,keep={};
+    const d=setData,keep={},lang=get().lang;
     // A test result arriving must not wipe a key that is being typed in another field.
     document.querySelectorAll('#setBody input[type="password"]').forEach(i=>{keep[i.id]=i.value});
-    let h="<h2>"+esc(t("sTitle"))+'</h2><p class="hint">'+esc(t("sHint"))+"</p>";
-    for(const p of d.providers)h+='<label for="k-'+esc(p.id)+'">'+esc(t("sKey")(p.label))+" <small>"+esc(p.configured?t("sKeySet")(p.last4?"••••"+p.last4:"••••"):t("sKeyNone"))+" · "+esc(p.envKey)+"</small></label>"
-      +'<input type="password" id="k-'+esc(p.id)+'" autocomplete="off" spellcheck="false" placeholder="'+esc(p.keyHint||t("sKeyPh"))+'">'
-      +'<div class="actions"><button type="button" class="btn sun sm" data-savekey="'+esc(p.id)+'">'+esc(t("sSave"))+"</button>"
-      +(p.configured?'<button type="button" class="btn sm" data-testkey="'+esc(p.id)+'">'+esc(t("sTest"))+'</button><button type="button" class="btn sm" data-delkey="'+esc(p.id)+'">'+esc(t("sRemove"))+"</button>":"")+"</div>"
-      +(tests[p.id]?'<p class="note" role="status" style="color:'+(TEST_COLOR[tests[p.id].state]||"inherit")+'">'+esc(tests[p.id].text)+"</p>":"");
-    h+='<label style="margin-top:18px">'+esc(t("sLimits"))+" <small>"+esc(t("sLimitsHint"))+"</small></label>"
-      +'<div class="row"><div><label for="lGen">'+esc(t("sPerGen"))+'</label><input id="lGen" type="number" min="0" step="0.5" inputmode="decimal" value="'+(d.limits.perGeneration??"")+'"></div>'
-      +'<div><label for="lDay">'+esc(t("sPerDay"))+'</label><input id="lDay" type="number" min="0" step="0.5" inputmode="decimal" value="'+(d.limits.perDay??"")+'"></div></div>'
-      +'<div class="actions" style="justify-content:flex-start"><button type="button" class="btn sm" id="sLimits">'+esc(t("sSaveLimits"))+"</button></div>";
-    if(setMsg)h+='<p class="note">'+esc(setMsg)+"</p>";
-    h+='<div class="actions"><button type="button" class="btn" id="sClose">'+esc(t("sClose"))+"</button></div>";
+    let h='<div class="dlg-head"><h2>'+esc(t("sTitle"))+'</h2><button type="button" class="btn ghost" id="sClose" aria-label="'+esc(t("sClose"))+'">✕</button></div><div class="dlg-scroll">';
+    // Language lives here, not in the top bar.
+    h+='<section class="card"><div class="card-head" style="margin:0"><h3>'+esc(t("sLang"))+'</h3><div class="seg" role="group" aria-label="'+esc(t("sLang"))+'">'+[["pt","Português"],["en","English"]].map(([k,n])=>'<button type="button" data-lang="'+k+'" aria-pressed="'+(lang===k)+'">'+n+"</button>").join("")+"</div></div></section>";
+    h+='<p class="hint">'+esc(t("sHint"))+"</p>";
+    for(const p of d.providers){
+      const tr=tests[p.id];
+      h+='<section class="card"><div class="card-head"><h3>'+esc(p.label)+'</h3><span class="kstat'+(p.configured?" on":"")+'">'+esc(p.configured?t("sKeySet")(p.last4?"••••"+p.last4:"••••"):t("sKeyNone"))+"</span></div>"
+        +'<div class="keyrow"><input type="password" id="k-'+esc(p.id)+'" autocomplete="off" spellcheck="false" aria-label="'+esc(t("sKey")(p.label))+'" placeholder="'+esc(p.keyHint||t("sKeyPh"))+'">'
+        +'<button type="button" class="btn sun" data-savekey="'+esc(p.id)+'">'+esc(t("sSave"))+"</button>"
+        +(p.configured?'<button type="button" class="btn" data-testkey="'+esc(p.id)+'">'+esc(t("sTest"))+'</button><button type="button" class="btn ghost danger" data-delkey="'+esc(p.id)+'">'+esc(t("sRemove"))+"</button>":"")+"</div>"
+        +(tr?'<p class="note" role="status" style="margin-bottom:0;color:'+(TEST_COLOR[tr.state]||"inherit")+'">'+esc(tr.text)+"</p>":"")+"</section>";
+    }
+    h+='<section class="card" style="margin-bottom:0"><div class="card-head"><h3>'+esc(t("sLimits"))+'</h3></div><p class="hint">'+esc(t("sLimitsHint"))+"</p>"
+      +'<div class="row"><div><label for="lGen" style="margin-top:0">'+esc(t("sPerGen"))+'</label><input id="lGen" type="number" min="0" step="0.5" inputmode="decimal" value="'+(d.limits.perGeneration??"")+'"></div>'
+      +'<div><label for="lDay" style="margin-top:0">'+esc(t("sPerDay"))+'</label><input id="lDay" type="number" min="0" step="0.5" inputmode="decimal" value="'+(d.limits.perDay??"")+'"></div></div>'
+      +'<div class="actions"><button type="button" class="btn" id="sLimits">'+esc(t("sSaveLimits"))+"</button>"+(setMsg?'<span class="note">'+esc(setMsg)+"</span>":"")+"</div></section></div>";
     $("#setBody").innerHTML=h;
     for(const k in keep){const el=document.getElementById(k);if(el&&keep[k])el.value=keep[k]}
   }
@@ -264,7 +268,13 @@ export function initGenerate({get,apply,t,esc,save}){
     stageKey=key;
     let h;
     if(j&&j.videoUrl)h='<video controls src="'+esc(j.videoUrl)+'"></video>';
-    else if(j&&ACTIVE.includes(j.status))h='<div class="stage-msg"><b>'+esc(t("st")[j.status]||j.status)+'</b><span class="tc">'+elapsed(j)+"</span>"+esc(j.modelLabel)+(j.waiting?"<br>"+esc(t("wait")[j.waiting]||""):"")+'<div class="bar2"><i style="width:'+(j.status==="downloading"?100:Math.max(4,j.progress||0))+'%"></i></div></div>';
+    else if(j&&ACTIVE.includes(j.status)){
+      // Big running timecode, the model underneath, and the four steps with the current one lit.
+      const order=["queued","submitting","generating","downloading"],cur=order.indexOf(j.status);
+      h='<div class="stage-msg"><span class="pill run">'+esc(t("st")[j.status]||j.status)+'</span><span class="tc">'+elapsed(j)+'</span><span class="mono dim">'+esc(j.modelLabel)+" / "+j.size[0]+"×"+j.size[1]+'</span><div class="steps">'
+        +order.map((s,i)=>'<span class="'+(i<cur?"past":i===cur?"now":"")+'">'+(i<cur?"✓ ":"")+esc(t("st")[s])+"</span>").join("")+"</div>"
+        +(j.waiting?'<span class="dim">'+esc(t("wait")[j.waiting]||"")+"</span>":"")+'</div><div class="bar2"><i style="width:'+(j.status==="downloading"?100:Math.max(4,j.progress||0))+'%"></i></div>';
+    }
     else if(j&&j.error)h='<div class="stage-msg"><b>'+esc(t("st").failed)+"</b>"+esc(t("err")[j.error.kind]||"")+" "+esc(j.error.message||"")+"</div>";
     else h='<div class="stage-msg"><b>'+esc(t("vEmpty"))+"</b>"+esc(t(online?"vHint":"vHintOffline"))+"</div>";
     st.innerHTML=h;

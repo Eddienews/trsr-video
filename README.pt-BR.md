@@ -4,13 +4,31 @@
 
 Estúdio de vídeo com IA da NorthWindLab Studio. Você monta o filme (história, personagens, cenário, tomadas, visual), escolhe a plataforma e o modelo, vê o custo, confirma e recebe o vídeo. Também dá para só copiar o prompt e gerar em outro lugar. Licença MIT.
 
+## Telas
+
+![O estúdio: projeto à esquerda, monitor e escolha do modelo no meio, gerações à direita, linha do tempo embaixo](docs/screenshots/studio.png)
+
+O estúdio. Projeto à esquerda, monitor com a escolha de plataforma, modelo e resolução no meio, gerações à direita, linha do tempo das tomadas embaixo. As imagens mostram a interface em inglês; o português fica em Configurações.
+
+![A janela de confirmação com o custo estimado](docs/screenshots/generate.png)
+
+A janela de confirmação. Nada é enviado nem cobrado antes do "OK, gerar".
+
+![Tomadas à esquerda e o prompt que será enviado à direita](docs/screenshots/shots-and-prompt.png)
+
+As tomadas e o prompt que vai para o modelo.
+
+![Configurações: idioma e um campo de chave por plataforma](docs/screenshots/settings.png)
+
+Configurações: idioma e uma chave por plataforma. As chaves ficam no `.env` local.
+
 ## Estado atual
 
 Funciona: o montador de prompt (completo, compacto e por tomada), o servidor local com as chaves no `.env`, o registro de modelos, nove plataformas, estimativa de custo, janela de confirmação, fila de um pedido por vez, download do MP4, lista de gerações com monitor e teste de chave.
 
 Ainda não foi feito: biblioteca com filtros e comparação lado a lado, agente que preenche o formulário a partir de um pedido livre, imagens de referência, Leonardo.
 
-Os adaptadores foram escritos a partir da documentação de cada plataforma e são cobertos por testes com respostas simuladas. Só o teste de chave (Runware, Higgsfield e Krea) rodou contra as APIs reais até agora; a primeira geração em cada plataforma é o teste de verdade.
+Os adaptadores foram escritos a partir da documentação de cada plataforma e são cobertos por testes com respostas simuladas. Contra as APIs reais até agora: o teste de chave (Runware, Higgsfield e Krea) e uma geração na Runware (Seedance 2.0 Mini). Nas outras plataformas, a primeira geração é o teste de verdade.
 
 ## Usar
 
