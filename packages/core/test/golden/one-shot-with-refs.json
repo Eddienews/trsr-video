@@ -1,0 +1,65 @@
+{
+ "mode": "full",
+ "current": "==== SCENE CONTEXT ====\nA 8-second heartfelt short. One single continuous story.\nA tired little owl at a desk at night.\nShort spoken lines only where written in ACTION. No other speech.\n\n==== ACTIVE REFERENCES ====\nIMAGE 1: character sheet of the owl. Use it for his design only.\nIMAGE 2: the desk\nUse the references ONLY for what is stated above.\nEverything else is defined in the sections below.\nKEEP every design IDENTICAL from first frame to last.\n\n==== CHARACTERS ====\nFUZZ\nSmall fluffy owl with huge tired eyes\n\n==== LOCATION MAP ====\nA small home office at night\n\n==== SCALE LOCK ====\n\n==== CONTINUITY ====\nSame location, same time of day, same light direction in every shot.\nCharacter designs NEVER change.\nWardrobe and colors NEVER change.\n\n==== FIRST FRAME / BLOCKING ====\nThe owl asleep on the keyboard\n\n==== FORMAT MODE ====\n9:16 vertical.\nONE continuous shot. No cuts.\n\n==== OPTICS ====\nSHOT 1 (0:00–0:08): 35mm\n\n==== CAMERA ====\nSHOT 1: LOCKED.\n\n==== ACTION ====\nSHOT 1 (0:00–0:08)\nHe wakes up and says \"one more coffee\"\nHold.\n\n==== PERFORMANCE ====\n\n==== SURFACE DETAIL ====\n\n==== PHYSICS ====\n\n==== LIGHTING ====\nNight scene lit by practical lights: windows, lamps and signs.\nSoft glow and bloom around every lamp.\n\n==== COLOR GRADE ====\n\n==== STYLE ====\nNEEDLE-FELTED WOOL STOP-MOTION.\nNO readable text anywhere in frame.\nNO text overlays.\nNO subtitles.\nNO watermark.\nNO logos.\n\n==== OUTPUT SETTINGS ====\n9:16.\n8 seconds.\nOne continuous shot.\nClean, smooth animation. No flicker.\n\n==== FINAL POSITIVE LOCKS ====\nNeedle-felted wool stop-motion look in EVERY frame.\nNight lighting: warm practical lights against deep blue.\nFUZZ stays IDENTICAL from first frame to last.",
+ "full": "==== SCENE CONTEXT ====\nA 8-second heartfelt short. One single continuous story.\nA tired little owl at a desk at night.\nShort spoken lines only where written in ACTION. No other speech.\n\n==== ACTIVE REFERENCES ====\nIMAGE 1: character sheet of the owl. Use it for his design only.\nIMAGE 2: the desk\nUse the references ONLY for what is stated above.\nEverything else is defined in the sections below.\nKEEP every design IDENTICAL from first frame to last.\n\n==== CHARACTERS ====\nFUZZ\nSmall fluffy owl with huge tired eyes\n\n==== LOCATION MAP ====\nA small home office at night\n\n==== SCALE LOCK ====\n\n==== CONTINUITY ====\nSame location, same time of day, same light direction in every shot.\nCharacter designs NEVER change.\nWardrobe and colors NEVER change.\n\n==== FIRST FRAME / BLOCKING ====\nThe owl asleep on the keyboard\n\n==== FORMAT MODE ====\n9:16 vertical.\nONE continuous shot. No cuts.\n\n==== OPTICS ====\nSHOT 1 (0:00–0:08): 35mm\n\n==== CAMERA ====\nSHOT 1: LOCKED.\n\n==== ACTION ====\nSHOT 1 (0:00–0:08)\nHe wakes up and says \"one more coffee\"\nHold.\n\n==== PERFORMANCE ====\n\n==== SURFACE DETAIL ====\n\n==== PHYSICS ====\n\n==== LIGHTING ====\nNight scene lit by practical lights: windows, lamps and signs.\nSoft glow and bloom around every lamp.\n\n==== COLOR GRADE ====\n\n==== STYLE ====\nNEEDLE-FELTED WOOL STOP-MOTION.\nNO readable text anywhere in frame.\nNO text overlays.\nNO subtitles.\nNO watermark.\nNO logos.\n\n==== OUTPUT SETTINGS ====\n9:16.\n8 seconds.\nOne continuous shot.\nClean, smooth animation. No flicker.\n\n==== FINAL POSITIVE LOCKS ====\nNeedle-felted wool stop-motion look in EVERY frame.\nNight lighting: warm practical lights against deep blue.\nFUZZ stays IDENTICAL from first frame to last.",
+ "shots": "==== HOW TO USE ====\n1. Make one reference image per character with the REFERENCE prompts (text-to-image).\n2. Make each empty LOCATION PLATE (text-to-image).\n3. For each shot, make the START and END keyframes with an image-edit model: image 1 = the plate named in the prompt, then the references in the order the prompt lists them. Most local editors take only 3 images, so with 3 or more characters the prompt asks for ONE reference sheet with the others side by side (paste their reference images next to each other).\n4. Generate each shot with the TAKE prompt in first + last frame mode (start = first image, end = last image).\n5. Join the shots in order with hard cuts.\n\n==== REFERENCE — FUZZ ====\nCharacter design reference, full body, three-quarter view, on a plain warm light-grey background.\nFUZZ (Small fluffy owl with huge tired eyes).\nNEEDLE-FELTED WOOL STOP-MOTION.\nSoft even studio light. No text.\n\n==== LOCATION PLATE ====\nBackground painting of an empty set for an animated film. 16:9 film frame.\nA small home office at night\nNEEDLE-FELTED WOOL STOP-MOTION.\nNight scene lit by practical lights: windows, lamps and signs.\nAn empty set: only architecture, objects and light.\nNo readable text, no logos.\n\n==== SHOT 1 — 0:00–0:08 (8 s) · plate: LOCATION PLATE ====\n\n==== SHOT 1 · KEYFRAME START ====\nFilm frame of the animated short, 35mm.\nThe first moment of the shot: He wakes up and says \"one more coffee\"\nNo characters in frame.\nImage 1 is the LOCATION PLATE: keep that place, its layout and its light.\nNeedle-felted wool stop-motion look in EVERY frame.\nNight scene lit by practical lights: windows, lamps and signs.\nClear, crisp image with full contrast. 16:9, no readable text.\n\n==== SHOT 1 · KEYFRAME END ====\nFilm frame of the animated short, 35mm.\nThe last moment of the shot: He wakes up and says \"one more coffee\"\nNo characters in frame.\nImage 1 is the LOCATION PLATE: keep that place, its layout and its light.\nNeedle-felted wool stop-motion look in EVERY frame.\nNight scene lit by practical lights: windows, lamps and signs.\nClear, crisp image with full contrast. 16:9, no readable text.\n\n==== SHOT 1 · TAKE PROMPT ====\nAnimated film shot, 35mm, camera: LOCKED.\nHe wakes up and says \"one more coffee\"\nNo characters in frame.\nNeedle-felted wool stop-motion look in EVERY frame. Night lighting: warm practical lights against deep blue.\nSame place and same characters from the first to the last frame; nothing new enters the frame.\nShort spoken lines only where written in ACTION. No other speech.",
+ "meta": "You are a director writing a prompt for a text-to-video AI model that makes short animated films.\nTurn the IDEA below into one complete prompt. The idea may be written in Portuguese; write the prompt in English.\n\nUse EXACTLY these sections, in this order, each one headed as ==== NAME ====:\nSCENE CONTEXT / ACTIVE REFERENCES / CHARACTERS / LOCATION MAP / SCALE LOCK / CONTINUITY / FIRST FRAME / BLOCKING / FORMAT MODE / OPTICS / CAMERA / ACTION / PERFORMANCE / SURFACE DETAIL / PHYSICS / LIGHTING / COLOR GRADE / STYLE / OUTPUT SETTINGS / FINAL POSITIVE LOCKS\n\nRules:\n- Short declarative lines, one fact per line. No paragraphs.\n- Put the few things that must not fail in CAPITALS (colors, counts, sizes, NO/NEVER rules).\n- CHARACTERS: for each one give body and face, outfit with exact colors, vehicle or prop, and personality.\n- LOCATION MAP: describe the place like a map, then say from which side of the frame each character enters.\n- SCALE LOCK and CONTINUITY: state relative sizes and everything that never changes between shots.\n- Split the 8 seconds into 5 to 8 shots. Give every shot a time range, one lens (OPTICS), one camera move (CAMERA) and one clear action (ACTION). End each shot with HARD CUT. and the last one with Hold.\n- The story needs a setup, an escalation and a final turn that lands in the last two shots.\n- STYLE ends with: NO text overlays. NO subtitles. NO watermark. NO logos.\n- FINAL POSITIVE LOCKS repeats, in five or six lines, the style, the light, the key colors and the ending.\n- Output only the prompt.\n\nFixed settings:\nFormat: 9:16 vertical. Duration: 8 seconds. Tone: heartfelt. Short spoken lines only where written in ACTION. No other speech.\n\nSTYLE to use:\nNEEDLE-FELTED WOOL STOP-MOTION.\n\nLIGHTING to use:\nNight scene lit by practical lights: windows, lamps and signs.\nSoft glow and bloom around every lamp.\n\nIDEA:\nA tired little owl at a desk at night.",
+ "checks": [
+  [
+   false,
+   "k1"
+  ],
+  [
+   false,
+   "k2"
+  ],
+  [
+   false,
+   "k3"
+  ],
+  [
+   false,
+   "k4"
+  ],
+  [
+   false,
+   "k5"
+  ],
+  [
+   false,
+   "k6"
+  ],
+  [
+   true,
+   "k7"
+  ],
+  [
+   false,
+   "k8"
+  ],
+  [
+   true,
+   "k9"
+  ],
+  [
+   false,
+   "k10"
+  ],
+  [
+   false,
+   "k11"
+  ],
+  [
+   true,
+   "k12"
+  ]
+ ],
+ "total": 8,
+ "spans": [
+  [
+   0,
+   8
+  ]
+ ],
+ "lightOk": true
+}

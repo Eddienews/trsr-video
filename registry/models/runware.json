@@ -1,0 +1,80 @@
+[
+  {
+    "id": "seedance-2.0-mini",
+    "label": "Seedance 2.0 Mini",
+    "provider": "runware",
+    "apiModelId": "bytedance:seedance@2.0-mini",
+    "duration": { "minS": 4, "maxS": 15 },
+    "multiShot": true,
+    "audio": true,
+    "audioParam": "settings.audio",
+    "inputs": { "referenceImages": 9, "firstFrame": true, "lastFrame": true },
+    "maxPromptChars": 10000,
+    "sizes": {
+      "480p": { "16:9": [864, 496], "9:16": [496, 864], "1:1": [640, 640] },
+      "720p": { "16:9": [1280, 720], "9:16": [720, 1280], "1:1": [960, 960] }
+    },
+    "pricing": {
+      "currency": "USD",
+      "perSecond": { "480p": 0.036, "720p": 0.081 },
+      "source": "official",
+      "asOf": "2026-11-10",
+      "measured": [{ "resolution": "480p", "durationS": 15, "costUSD": 0.57, "date": "2026-11-10" }]
+    },
+    "notes": "multiShot comes from NorthWindLab tests (one prompt, hard cuts at the listed times); the docs page does not state it.",
+    "docsUrl": "https://runware.ai/docs/models/bytedance-seedance-2-0-mini",
+    "verifiedAt": "2026-11-10"
+  },
+  {
+    "id": "seedance-2.5",
+    "label": "Seedance 2.5",
+    "provider": "runware",
+    "apiModelId": "bytedance:seedance@2.5",
+    "duration": { "minS": 4, "maxS": 30 },
+    "multiShot": true,
+    "audio": true,
+    "audioParam": "settings.audio",
+    "inputs": { "referenceImages": 30, "firstFrame": true, "lastFrame": true },
+    "maxPromptChars": 50000,
+    "sizes": {
+      "480p": { "16:9": [854, 480], "9:16": [480, 854], "1:1": [640, 640] },
+      "720p": { "16:9": [1280, 720], "9:16": [720, 1280], "1:1": [960, 960] },
+      "1080p": { "16:9": [1920, 1080], "9:16": [1080, 1920], "1:1": [1440, 1440] }
+    },
+    "pricing": {
+      "currency": "USD",
+      "perSecond": { "480p": 0.102, "720p": 0.23, "1080p": 0.614 },
+      "source": "official",
+      "asOf": "2026-11-10",
+      "measured": [{ "resolution": "480p", "durationS": 20, "costUSD": 2.06, "date": "2026-11-10" }]
+    },
+    "notes": "multiShot comes from NorthWindLab tests. Frame images cannot be combined with reference images on this model.",
+    "docsUrl": "https://runware.ai/docs/models/bytedance-seedance-2-5",
+    "verifiedAt": "2026-11-10"
+  },
+  {
+    "id": "kling-4.0-flash",
+    "label": "Kling 4.0 Flash",
+    "provider": "runware",
+    "apiModelId": "klingai:kling-video@4.0-flash",
+    "duration": { "minS": 3, "maxS": 20 },
+    "multiShot": true,
+    "audio": true,
+    "audioParam": null,
+    "inputs": { "referenceImages": null, "firstFrame": null, "lastFrame": null },
+    "maxPromptChars": null,
+    "sizes": {
+      "720p": { "16:9": [1280, 720], "9:16": null, "1:1": null }
+    },
+    "pricing": {
+      "currency": "USD",
+      "perSecond": { "720p": 0.094 },
+      "source": "measured",
+      "asOf": "2026-11-10",
+      "measured": [{ "resolution": "720p", "durationS": 20, "costUSD": 1.88, "date": "2026-11-10" }]
+    },
+    "notes": "No Runware docs page found for the Flash variant on 2026-11-10: every value here comes from NorthWindLab tests. null = not checked, so the app does not offer it.",
+    "docsUrl": null,
+    "verifiedAt": null
+  }
+]

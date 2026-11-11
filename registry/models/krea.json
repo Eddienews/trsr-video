@@ -1,0 +1,80 @@
+[
+  {
+    "id": "krea-veo-3.1",
+    "label": "Veo 3.1",
+    "provider": "krea",
+    "apiModelId": "google/veo-3.1",
+    "duration": { "minS": 6, "maxS": 6, "allowedS": [6] },
+    "multiShot": false,
+    "audio": true,
+    "audioParam": null,
+    "inputs": { "referenceImages": null, "firstFrame": null, "lastFrame": null },
+    "maxPromptChars": null,
+    "sizesNominal": true,
+    "sizes": {
+      "720p": { "16:9": [1280, 720], "9:16": null, "1:1": null }
+    },
+    "pricing": {
+      "currency": "USD",
+      "perSecond": { "720p": 0.20 },
+      "source": "official",
+      "asOf": "2026-11-10"
+    },
+    "notes": "Krea lists Veo 3.1 'from US$ 0.20 per second'. Only the documented example (6 s, 720p, 16:9) was checked; other durations, resolutions and ratios need the endpoint reference.",
+    "docsUrl": "https://www.krea.ai/docs/developers/introduction.md",
+    "verifiedAt": "2026-11-10"
+  },
+  {
+    "id": "krea-seedance-2.0-mini",
+    "label": "Seedance 2.0 Mini",
+    "provider": "krea",
+    "apiModelId": "bytedance/seedance-2-mini",
+    "duration": { "minS": 4, "maxS": 15 },
+    "multiShot": true,
+    "audio": true,
+    "audioParam": null,
+    "inputs": { "referenceImages": null, "firstFrame": null, "lastFrame": null },
+    "maxPromptChars": null,
+    "sizesNominal": true,
+    "sizes": {
+      "480p": { "16:9": [854, 480], "9:16": null, "1:1": null },
+      "720p": { "16:9": [1280, 720], "9:16": null, "1:1": null }
+    },
+    "pricing": {
+      "currency": "USD",
+      "perSecond": { "480p": null, "720p": null },
+      "source": "official",
+      "asOf": "2026-11-10"
+    },
+    "notes": "NOT OFFERED YET: Krea's per-second API price for this model is only on https://www.krea.ai/app/api/pricing (needs login). Fill perSecond from that page to enable it.",
+    "docsUrl": "https://www.krea.ai/docs/developers/seedance.md",
+    "verifiedAt": null
+  },
+  {
+    "id": "krea-seedance-2.5",
+    "label": "Seedance 2.5",
+    "provider": "krea",
+    "apiModelId": "bytedance/seedance-2-5",
+    "duration": { "minS": 4, "maxS": 30 },
+    "multiShot": true,
+    "audio": true,
+    "audioParam": null,
+    "inputs": { "referenceImages": null, "firstFrame": null, "lastFrame": null },
+    "maxPromptChars": null,
+    "sizesNominal": true,
+    "sizes": {
+      "480p": { "16:9": [854, 480], "9:16": null, "1:1": null },
+      "720p": { "16:9": [1280, 720], "9:16": null, "1:1": null },
+      "1080p": { "16:9": [1920, 1080], "9:16": null, "1:1": null }
+    },
+    "pricing": {
+      "currency": "USD",
+      "perSecond": { "480p": null, "720p": null, "1080p": null },
+      "source": "official",
+      "asOf": "2026-11-10"
+    },
+    "notes": "NOT OFFERED YET: Krea's per-second API price for this model is only on https://www.krea.ai/app/api/pricing (needs login). Fill perSecond from that page to enable it.",
+    "docsUrl": "https://www.krea.ai/docs/developers/seedance.md",
+    "verifiedAt": null
+  }
+]

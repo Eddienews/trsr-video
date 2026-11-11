@@ -1,0 +1,23 @@
+{"title":"The Last Donut","dur":15,"genre":"comedy","dialogue":"sfx",
+"logline":"A bright supermarket, late afternoon.\nTwo old rivals in wheelchairs spot the LAST donut at the bakery counter.\nThey race down the aisle for it.\nA small kid takes it first.",
+"chars":[
+{"name":"AL","nick":"The Racer","look":"Thin old man, long nose, white mustache","ward":"RED bathrobe over striped pajamas","prop":"Rides a dented steel wheelchair","pers":"competitive, grumpy"},
+{"name":"ROSE","nick":"","look":"Round old woman, big purple glasses, silver curls","ward":"GREEN cardigan, pearl necklace","prop":"Rides a pink wheelchair with a basket","pers":"sly, fearless"},
+{"name":"THE KID","nick":"Bean","look":"Small child with a blond bowl cut","ward":"Yellow raincoat","prop":"","pers":"calm, hungry"},
+{"name":"","nick":"","look":"","ward":"","prop":"","pers":""}],
+"location":"Inside a bright supermarket.\nOne long aisle leads to the bakery counter.\nONE donut sits on a glass stand on the counter.",
+"blocking":"AL always on FRAME LEFT, ROSE on FRAME RIGHT.\nThe kid enters from the RIGHT at the counter.",
+"scale":"The kid's head reaches their shoulders.\nThe donut is the size of a fist.",
+"continuity":"AL's bathrobe stays RED.\nROSE's cardigan stays GREEN.\nOnly ONE donut in the whole film.\nThe floor is shiny white tile.",
+"firstFrame":"Wide view down the aisle.\nThe donut glows on the counter far away.",
+"textLock":"A sign above the counter reads exactly \"BAKERY\"",
+"plates":[{"name":"Aisle","desc":"The long aisle seen from its start, shelves on both sides, the bakery counter far away"},{"name":"","desc":"Low view of the aisle floor, shiny tiles, shelves rising on both sides"},{"name":"Bakery counter","desc":"The bakery counter seen from the front, a glass stand in the middle"},{"name":"","desc":""}],
+"shots":[
+{"len":3,"lens":"35mm wide establishing","move":"Slow push-in.","act":"The aisle. The donut on the counter.\nAL and ROSE roll in from both sides.","who":[0,1],"plate":0,"start":"Wide view of the aisle, AL small on the left, ROSE small on the right","end":""},
+{"len":2,"lens":"50mm close-up","move":"LOCKED","act":"AL narrows his eyes","who":[0],"plate":0},
+{"len":2.5,"lens":"85mm close-up","move":"LOCKED.","act":"ROSE smirks.","who":[1],"plate":"0"},
+{"len":4,"lens":"24mm low-angle wide","move":"FAST tracking alongside the action.","act":"They race down the aisle, wheels sparking.","who":[0,1],"plate":1},
+{"len":2,"lens":"28mm wide","move":"LOCKED.","act":"Both reach for the donut.\nThe kid takes it first.","who":[0,1,2],"plate":2,"start":"","end":"The kid holds the donut, AL and ROSE frozen with arms out"},
+{"len":1.5,"lens":"100mm macro detail","move":"SNAP ZOOM into the face.","act":"The kid takes one bite.","who":[2],"plate":5}],
+"lightPreset":"store","lighting":"Bright, even overhead lighting of a store or office.\nSoft shadows straight under objects and characters.\nClean highlights on shiny floors and surfaces.\nOne slightly warmer accent light on the main subject.","grade":"Clean, bright palette with crisp whites and saturated product colors.\nFresh, high-key look.",
+"finalLocks":"ONE donut. The kid gets it.","mode":"shots"}

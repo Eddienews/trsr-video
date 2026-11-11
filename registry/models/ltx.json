@@ -1,0 +1,81 @@
+[
+  {
+    "id": "ltx-2.3-fast",
+    "label": "LTX-2.3 Fast",
+    "provider": "ltx",
+    "apiModelId": "ltx-2-3-fast",
+    "duration": { "minS": 6, "maxS": 20, "allowedS": [6, 8, 10, 12, 14, 16, 18, 20] },
+    "multiShot": false,
+    "audio": true,
+    "audioParam": "generate_audio",
+    "inputs": { "referenceImages": null, "firstFrame": null, "lastFrame": null },
+    "maxPromptChars": 5000,
+    "sizes": {
+      "720p": { "16:9": [1280, 720], "9:16": [720, 1280], "1:1": null },
+      "1080p": { "16:9": [1920, 1080], "9:16": [1080, 1920], "1:1": null }
+    },
+    "pricing": { "currency": "USD", "perSecond": { "720p": 0.03, "1080p": 0.06 }, "source": "official", "asOf": "2026-11-10" },
+    "notes": "Durations are the ones allowed at the default 24 fps. 1440p and 4K exist at higher prices and are not listed here.",
+    "docsUrl": "https://docs.ltx.io/models/ltx-2-3",
+    "verifiedAt": "2026-11-10"
+  },
+  {
+    "id": "ltx-2.3-pro",
+    "label": "LTX-2.3 Pro",
+    "provider": "ltx",
+    "apiModelId": "ltx-2-3-pro",
+    "duration": { "minS": 6, "maxS": 10, "allowedS": [6, 8, 10] },
+    "multiShot": false,
+    "audio": true,
+    "audioParam": "generate_audio",
+    "inputs": { "referenceImages": null, "firstFrame": null, "lastFrame": null },
+    "maxPromptChars": 5000,
+    "sizes": {
+      "720p": { "16:9": [1280, 720], "9:16": [720, 1280], "1:1": null },
+      "1080p": { "16:9": [1920, 1080], "9:16": [1080, 1920], "1:1": null }
+    },
+    "pricing": { "currency": "USD", "perSecond": { "720p": 0.04, "1080p": 0.08 }, "source": "official", "asOf": "2026-11-10" },
+    "docsUrl": "https://docs.ltx.io/models/ltx-2-3",
+    "verifiedAt": "2026-11-10"
+  },
+  {
+    "id": "ltx-2.5-fast",
+    "label": "LTX-2.5 Fast",
+    "provider": "ltx",
+    "apiModelId": "ltx-2-5-fast",
+    "duration": { "minS": 6, "maxS": 20, "allowedS": [6, 8, 10, 12, 14, 16, 18, 20] },
+    "multiShot": true,
+    "audio": true,
+    "audioParam": "generate_audio",
+    "inputs": { "referenceImages": null, "firstFrame": null, "lastFrame": null },
+    "maxPromptChars": 5000,
+    "sizes": {
+      "720p": { "16:9": [1280, 720], "9:16": [720, 1280], "1:1": [720, 720] },
+      "1080p": { "16:9": [1920, 1080], "9:16": [1080, 1920], "1:1": [1080, 1080] }
+    },
+    "pricing": { "currency": "USD", "perSecond": { "720p": 0.09, "1080p": 0.13 }, "source": "official", "asOf": "2026-11-10" },
+    "notes": "The docs describe native multi-shot scenes for LTX-2.5 (several connected shots in one generation). Durations are the ones allowed at the default 24 fps.",
+    "docsUrl": "https://docs.ltx.io/models/ltx-2-5",
+    "verifiedAt": "2026-11-10"
+  },
+  {
+    "id": "ltx-2.5-pro",
+    "label": "LTX-2.5 Pro",
+    "provider": "ltx",
+    "apiModelId": "ltx-2-5-pro",
+    "duration": { "minS": 6, "maxS": 10, "allowedS": [6, 8, 10] },
+    "multiShot": true,
+    "audio": true,
+    "audioParam": "generate_audio",
+    "inputs": { "referenceImages": null, "firstFrame": null, "lastFrame": null },
+    "maxPromptChars": 5000,
+    "sizes": {
+      "720p": { "16:9": [1280, 720], "9:16": [720, 1280], "1:1": [720, 720] },
+      "1080p": { "16:9": [1920, 1080], "9:16": [1080, 1920], "1:1": [1080, 1080] }
+    },
+    "pricing": { "currency": "USD", "perSecond": { "720p": 0.12, "1080p": 0.17 }, "source": "official", "asOf": "2026-11-10" },
+    "notes": "The docs describe native multi-shot scenes for LTX-2.5.",
+    "docsUrl": "https://docs.ltx.io/models/ltx-2-5",
+    "verifiedAt": "2026-11-10"
+  }
+]

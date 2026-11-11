@@ -1,0 +1,66 @@
+{
+  "runware": {
+    "label": "Runware",
+    "envKey": "RUNWARE_API_KEY",
+    "endpoint": "https://api.runware.ai/v1",
+    "docsUrl": "https://runware.ai/docs/platform/authentication",
+    "capabilities": { "cancel": false, "reportsCost": true }
+  },
+  "higgsfield": {
+    "label": "Higgsfield",
+    "envKey": "HIGGSFIELD_API_KEY",
+    "keyHint": "KEY_ID:KEY_SECRET",
+    "endpoint": "https://api.higgsfield.ai",
+    "docsUrl": "https://docs.higgsfield.ai/docs/authentication.md",
+    "capabilities": { "cancel": true, "reportsCost": false }
+  },
+  "runway": {
+    "label": "Runway",
+    "envKey": "RUNWAYML_API_SECRET",
+    "endpoint": "https://api.dev.runwayml.com",
+    "docsUrl": "https://docs.dev.runwayml.com/guides/using-the-api/",
+    "capabilities": { "cancel": true, "reportsCost": false }
+  },
+  "pika": {
+    "label": "Pika",
+    "envKey": "PIKA_API_KEY",
+    "endpoint": "https://api.dev.pika.art/v1",
+    "docsUrl": "https://dev.pika.art/models/pika/pika-2.5/text-to-video",
+    "capabilities": { "cancel": false, "reportsCost": true }
+  },
+  "xai": {
+    "label": "xAI (Grok Imagine)",
+    "envKey": "XAI_API_KEY",
+    "endpoint": "https://api.x.ai/v1",
+    "docsUrl": "https://docs.x.ai/developers/model-capabilities/video/generation",
+    "capabilities": { "cancel": false, "reportsCost": false }
+  },
+  "ltx": {
+    "label": "LTX",
+    "envKey": "LTX_API_KEY",
+    "endpoint": "https://api.ltx.io/v2",
+    "docsUrl": "https://docs.ltx.io/welcome",
+    "capabilities": { "cancel": false, "reportsCost": false }
+  },
+  "kling": {
+    "label": "Kling",
+    "envKey": "KLING_API_KEY",
+    "endpoint": "https://api-singapore.klingai.com",
+    "docsUrl": "https://kling.ai/document-api/api/get-started/authentication",
+    "capabilities": { "cancel": false, "reportsCost": false }
+  },
+  "google": {
+    "label": "Google (Gemini)",
+    "envKey": "GEMINI_API_KEY",
+    "endpoint": "https://generativelanguage.googleapis.com/v1beta",
+    "docsUrl": "https://ai.google.dev/gemini-api/docs/omni",
+    "capabilities": { "cancel": false, "reportsCost": false }
+  },
+  "krea": {
+    "label": "Krea",
+    "envKey": "KREA_API_KEY",
+    "endpoint": "https://api.krea.ai",
+    "docsUrl": "https://www.krea.ai/docs/developers/introduction.md",
+    "capabilities": { "cancel": true, "reportsCost": false }
+  }
+}

@@ -1,0 +1,6 @@
+{"title":"Owl","dur":8,"aspect":"9:16 vertical","genre":"heartfelt","dialogue":"lines",
+"logline":"A tired little owl at a desk at night.","refs":"IMAGE 1: character sheet of the owl. Use it for his design only.\nIMAGE 2: the desk",
+"chars":[{"name":"Fuzz","nick":"","look":"Small fluffy owl with huge tired eyes","ward":"","prop":"","pers":""}],
+"location":"A small home office at night","blocking":"","scale":"","continuity":"","firstFrame":"The owl asleep on the keyboard",
+"shots":[{"len":8,"lens":"","move":"","act":"He wakes up and says \"one more coffee\""}],
+"stylePreset":"felt","style":"NEEDLE-FELTED WOOL STOP-MOTION.","surface":"","physics":"","lightPreset":"night","lighting":"Night scene lit by practical lights: windows, lamps and signs.\nSoft glow and bloom around every lamp.","grade":"","performance":""}

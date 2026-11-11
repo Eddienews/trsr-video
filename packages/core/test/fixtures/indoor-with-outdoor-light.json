@@ -1,0 +1,7 @@
+{"dur":12,"aspect":"1:1 square","genre":"suspense",
+"logline":"Uma cozinha escura.\nUm gato olha o peixe.\nEle pula.",
+"chars":[{"name":"The Cat","nick":"Shadow","look":"Black cat, yellow eyes","ward":"Red collar","prop":"","pers":"patient"},{"name":"The Fish","nick":"","look":"Orange goldfish in a round bowl","ward":"","prop":"A round glass bowl","pers":"oblivious"}],
+"location":"Dentro de uma cozinha pequena.\nUma mesa com um aquário.","blocking":"The cat on FRAME LEFT","scale":"The bowl is twice the cat's head.",
+"continuity":"The collar stays RED.\nThe bowl never moves.","firstFrame":"The kitchen.\nThe bowl on the table.",
+"shots":[{"len":4,"lens":"18mm overhead wide","move":"Crane up to reveal the whole scene.","act":"The cat stares at the bowl.","who":[0,1]},{"len":4,"lens":"50mm medium","move":"Gentle handheld drift.","act":"The fish swims in circles.","who":[1]},{"len":3,"lens":"35mm two-shot","move":"Whip pan between the characters.","act":"The cat jumps.","who":[]}],
+"stylePreset":"custom","lightPreset":"custom","style":"Flat vector look.\nBold shapes.\nCharacters have big faces.","lighting":"Hard moonlight from the window.\nThin mist on the floor.","mode":"shots"}

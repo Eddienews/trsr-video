@@ -1,0 +1,51 @@
+[
+  {
+    "id": "runway-gen4.5",
+    "label": "Gen-4.5",
+    "provider": "runway",
+    "apiModelId": "gen4.5",
+    "duration": { "minS": 5, "maxS": 5, "allowedS": [5] },
+    "multiShot": false,
+    "audio": false,
+    "audioParam": null,
+    "inputs": { "referenceImages": null, "firstFrame": null, "lastFrame": null },
+    "maxPromptChars": null,
+    "sizes": {
+      "720p": { "16:9": [1280, 720], "9:16": null, "1:1": null }
+    },
+    "pricing": {
+      "currency": "USD",
+      "perSecond": { "720p": 0.12 },
+      "source": "official",
+      "asOf": "2026-11-10"
+    },
+    "notes": "12 credits per second at US$ 0.01 per credit. Only the 5 s, 1280:720 text-to-video example in the getting-started guide was checked; other durations, ratios and the promptText length limit could not be read from the API reference. A prompt that is too long is refused by Runway before anything is charged.",
+    "docsUrl": "https://docs.dev.runwayml.com/guides/using-the-api/",
+    "verifiedAt": "2026-11-10"
+  },
+  {
+    "id": "runway-seedance-2.5",
+    "label": "Seedance 2.5",
+    "provider": "runway",
+    "apiModelId": "seedance2_5",
+    "duration": { "minS": 4, "maxS": 30 },
+    "multiShot": true,
+    "audio": true,
+    "audioParam": null,
+    "inputs": { "referenceImages": null, "firstFrame": null, "lastFrame": null },
+    "maxPromptChars": null,
+    "sizes": {
+      "720p": { "16:9": [1280, 720], "9:16": null, "1:1": null }
+    },
+    "pricing": {
+      "currency": "USD",
+      "perSecond": { "720p": 0.30 },
+      "minUSD": 0.80,
+      "source": "official",
+      "asOf": "2026-11-10"
+    },
+    "notes": "30 credits per second at 720p, 80-credit minimum. The models guide confirms text_to_video and the ratio 1280:720 for this model; the ratio strings for 480p and 1080p were not checked. The 4 s minimum is the model's own limit as documented by other providers.",
+    "docsUrl": "https://docs.dev.runwayml.com/guides/models/",
+    "verifiedAt": "2026-11-10"
+  }
+]

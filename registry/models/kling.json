@@ -1,0 +1,43 @@
+[
+  {
+    "id": "kling-direct-4.0-flash",
+    "label": "Kling 4.0 Flash",
+    "provider": "kling",
+    "apiModelId": "kling-4.0-flash",
+    "duration": { "minS": 3, "maxS": 20 },
+    "multiShot": true,
+    "audio": true,
+    "audioParam": null,
+    "inputs": { "referenceImages": 10, "firstFrame": true, "lastFrame": null },
+    "maxPromptChars": 26000,
+    "sizesNominal": true,
+    "sizes": {
+      "720p": { "16:9": [1280, 720], "9:16": [720, 1280], "1:1": [720, 720] }
+    },
+    "pricing": { "currency": "USD", "perSecond": { "720p": 0.094 }, "source": "official", "asOf": "2026-11-10" },
+    "notes": "0.6 units per second at the list price of US$ 0.1569 per unit (US$ 510 for 3250 units). Kling sells units in prepaid packages; the bigger packages are 2 to 5% cheaper. Audio is always generated. multiShot comes from NorthWindLab tests of this model on Runware.",
+    "docsUrl": "https://kling.ai/document-api/api/video/4-0-flash",
+    "verifiedAt": "2026-11-10"
+  },
+  {
+    "id": "kling-direct-4.0",
+    "label": "Kling 4.0",
+    "provider": "kling",
+    "apiModelId": "kling-4.0",
+    "duration": { "minS": 3, "maxS": 30 },
+    "multiShot": true,
+    "audio": true,
+    "audioParam": null,
+    "inputs": { "referenceImages": 10, "firstFrame": true, "lastFrame": null },
+    "maxPromptChars": 26000,
+    "sizesNominal": true,
+    "sizes": {
+      "720p": { "16:9": [1280, 720], "9:16": [720, 1280], "1:1": [720, 720] },
+      "1080p": { "16:9": [1920, 1080], "9:16": [1080, 1920], "1:1": [1080, 1080] }
+    },
+    "pricing": { "currency": "USD", "perSecond": { "720p": 0.157, "1080p": 0.235 }, "source": "official", "asOf": "2026-11-10" },
+    "notes": "1.0 unit per second at 720p and 1.5 at 1080p, at the list price of US$ 0.1569 per unit. Prepaid packages. Audio is always generated.",
+    "docsUrl": "https://kling.ai/document-api/api/video/4-0",
+    "verifiedAt": "2026-11-10"
+  }
+]

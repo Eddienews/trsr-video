@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gerador de prompt de animação | NorthWindLab Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1E1B3A; --paper:#ECE9F4; --card:#FBFAFE; --line:#CFC9E3;
+  --sun:#F4A63A; --sun-deep:#C97A0E; --dusk:#5B4FB3; --teal:#17847F; --warn:#B3261E;
+  --muted:#625E80; --slate:#1A1733; --slate-text:#E9E6F7;
+  --ui:"Bricolage Grotesque",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:16px;line-height:1.45;padding-bottom:84px}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--dusk);outline-offset:2px}
+
+.top{padding:20px 16px 8px;max-width:1240px;margin:0 auto;display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.top h1{font-size:clamp(1.7rem,5.5vw,2.9rem);line-height:1.02;font-weight:800;margin:0 0 6px;letter-spacing:-.02em;max-width:16ch}
+.top p{margin:0;color:var(--muted);max-width:52ch}
+.brand{font-weight:600;font-size:.85rem;color:var(--dusk);margin-bottom:10px}
+.lang{display:flex;border:1.5px solid var(--ink);border-radius:999px;overflow:hidden;flex:none}
+.lang button{border:0;background:transparent;padding:6px 12px;font-weight:600;cursor:pointer;font-size:.85rem}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+
+/* timeline: the signature element */
+.reel{position:sticky;top:0;z-index:5;background:var(--paper);padding:10px 16px 12px;border-bottom:1.5px solid var(--ink)}
+.reel-in{max-width:1240px;margin:0 auto}
+.reel-head{display:flex;justify-content:space-between;align-items:baseline;font-size:.85rem;font-weight:600;margin-bottom:6px;gap:8px}
+.reel-head .sum.bad{color:var(--warn)}
+.strip{display:flex;gap:3px;height:44px}
+.strip button{border:0;border-radius:6px;min-width:0;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:0 7px;overflow:hidden;font-family:var(--mono);font-size:.7rem;line-height:1.2;color:var(--ink);background:var(--sun)}
+.strip button:nth-child(even){background:#B9B0EE}
+.strip button b{font-size:.8rem}
+.strip .gap{flex:none;border-radius:6px;background:repeating-linear-gradient(135deg,transparent 0 5px,var(--line) 5px 10px);border:1.5px dashed var(--muted)}
+
+.wrap{max-width:1240px;margin:0 auto;padding:16px;display:grid;gap:20px}
+@media(min-width:980px){.wrap{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:start}.out{position:sticky;top:96px;max-height:calc(100vh - 112px);display:flex;flex-direction:column}.bar{display:none!important}body{padding-bottom:24px}}
+
+.step{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.step>h2{margin:0 0 2px;font-size:1.25rem;font-weight:800;letter-spacing:-.01em;display:flex;gap:10px;align-items:baseline}
+.step>h2 span{font-family:var(--mono);font-size:.8rem;font-weight:600;color:var(--dusk)}
+.step>.hint{margin:0 0 12px;color:var(--muted);font-size:.9rem}
+label{display:block;font-weight:600;font-size:.88rem;margin:12px 0 4px}
+label small{font-weight:400;color:var(--muted)}
+input,select,textarea{width:100%;background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:9px 11px}
+textarea{resize:vertical;min-height:74px;line-height:1.4}
+input:hover,select:hover,textarea:hover{border-color:var(--muted)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:86px 1fr;gap:10px}
+@media(min-width:560px){.row3{grid-template-columns:86px 1fr 1fr}}
+.item{border:1.5px solid var(--line);border-left:6px solid var(--sun);border-radius:10px;padding:4px 12px 12px;margin-top:12px;background:#fff}
+.item.char{border-left-color:var(--teal)}
+.item-head{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.item-head strong{font-family:var(--mono);font-size:.85rem}
+.btn{border:1.5px solid var(--ink);background:transparent;border-radius:999px;padding:8px 14px;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.solid{background:var(--ink);color:var(--paper)}
+.btn.solid:hover{background:var(--dusk);border-color:var(--dusk)}
+.btn.sun{background:var(--sun);border-color:var(--sun-deep)}
+.btn.sun:hover{background:var(--sun-deep);color:#fff}
+.btn.sm{padding:4px 10px;font-size:.8rem}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+
+.out{background:var(--slate);color:var(--slate-text);border-radius:14px;padding:14px;min-height:0}
+.out h2{margin:0;font-size:1.1rem;font-weight:800}
+.out-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.out .btn{border-color:var(--slate-text);color:var(--slate-text)}
+.out .btn:hover{background:var(--slate-text);color:var(--slate)}
+.out .btn.sun{color:var(--ink);border-color:var(--sun)}
+.checks{list-style:none;margin:0 0 10px;padding:10px 12px;background:#262245;border-radius:10px;font-size:.84rem;display:grid;gap:3px}
+.checks li{display:flex;gap:8px}
+.checks li::before{content:"○";color:var(--sun)}
+.checks li.ok{color:#9C97BD}
+.checks li.ok::before{content:"●";color:#62C9A6}
+.checks li button{all:unset;cursor:pointer;text-decoration:underline;text-decoration-color:#5a547f;text-underline-offset:3px}
+.checks li button:hover{color:#fff}
+.checks li.ok button{text-decoration:none;cursor:default}
+.tabs{display:flex;gap:4px;margin:0 0 10px;background:#262245;border-radius:999px;padding:3px}
+.tabs button{flex:1;border:0;background:transparent;color:var(--slate-text);border-radius:999px;padding:7px 10px;font-weight:600;cursor:pointer;font-size:.85rem}
+.tabs button[aria-selected="true"]{background:var(--slate-text);color:var(--slate)}
+.tabhint{margin:0 0 10px;font-size:.8rem;color:#9C97BD}
+.who{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.who label{display:inline-flex;align-items:center;gap:6px;margin:0;font-weight:600;font-size:.82rem;border:1.5px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer;background:#fff}
+.who input{width:auto;margin:0;accent-color:var(--teal)}
+.who label:has(input:checked){border-color:var(--teal);background:#E3F4F2}
+.who .none{font-size:.82rem;color:var(--muted)}
+.miss{outline:3px solid var(--warn);outline-offset:3px;border-radius:9px}
+.btn.warnb{background:var(--warn);border-color:var(--warn);color:#fff}
+.score{font-family:var(--mono);font-size:.8rem;color:var(--sun)}
+pre{margin:0;font-family:var(--mono);font-size:.78rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;overflow:auto;flex:1;min-height:200px;background:#120F27;border-radius:10px;padding:12px}
+pre .h{color:var(--sun);font-weight:600}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--slate);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px}
+.bar .btn{flex:1;border-color:var(--slate-text);color:var(--slate-text)}
+.bar .btn.sun{color:var(--ink);border-color:var(--sun)}
+.foot{max-width:1240px;margin:0 auto;padding:0 16px;color:var(--muted);font-size:.82rem}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div>
+    <div class="brand">NorthWindLab Studio</div>
+    <h1 data-t="h1"></h1>
+    <p data-t="sub"></p>
+  </div>
+  <div class="lang" role="group" aria-label="Idioma / Language">
+    <button type="button" data-lang="pt">PT</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+</header>
+
+<div class="reel">
+  <div class="reel-in">
+    <div class="reel-head"><span data-t="reel"></span><span class="sum" id="sum"></span></div>
+    <div class="strip" id="strip"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="form">
+
+    <section class="step">
+      <h2><span>1</span><b data-t="s1"></b></h2>
+      <p class="hint" data-t="s1h"></p>
+      <label data-t="title"></label>
+      <input data-k="title" data-ph="titlePh">
+      <div class="row">
+        <div><label data-t="dur"></label><input data-k="dur" type="number" min="4" max="120" step="1"></div>
+        <div><label data-t="aspect"></label><select data-k="aspect"><option value="16:9 horizontal">16:9</option><option value="9:16 vertical">9:16</option><option value="1:1 square">1:1</option></select></div>
+      </div>
+      <div class="row">
+        <div><label data-t="genre"></label><select data-k="genre" id="genre"></select></div>
+        <div><label data-t="dialogue"></label><select data-k="dialogue" id="dialogue"></select></div>
+      </div>
+      <label><span data-t="logline"></span> <small data-t="loglineS"></small></label>
+      <textarea data-k="logline" rows="5" data-ph="loglinePh"></textarea>
+      <label><span data-t="refs"></span> <small data-t="refsS"></small></label>
+      <textarea data-k="refs" rows="2" data-ph="refsPh"></textarea>
+      <div class="actions">
+        <button type="button" class="btn sun" id="example" data-t="example"></button>
+        <button type="button" class="btn" id="reset" data-t="reset"></button>
+      </div>
+    </section>
+
+    <section class="step">
+      <h2><span>2</span><b data-t="s2"></b></h2>
+      <p class="hint" data-t="s2h"></p>
+      <div id="chars"></div>
+      <div class="actions"><button type="button" class="btn" id="addChar" data-t="addChar"></button></div>
+    </section>
+
+    <section class="step">
+      <h2><span>3</span><b data-t="s3"></b></h2>
+      <p class="hint" data-t="s3h"></p>
+      <label data-t="location"></label>
+      <textarea data-k="location" rows="4" data-ph="locationPh"></textarea>
+      <label><span data-t="blocking"></span> <small data-t="blockingS"></small></label>
+      <textarea data-k="blocking" rows="3" data-ph="blockingPh"></textarea>
+      <label><span data-t="scale"></span> <small data-t="scaleS"></small></label>
+      <textarea data-k="scale" rows="3" data-ph="scalePh"></textarea>
+      <label><span data-t="continuity"></span> <small data-t="continuityS"></small></label>
+      <textarea data-k="continuity" rows="3" data-ph="continuityPh"></textarea>
+      <label><span data-t="firstFrame"></span> <small data-t="firstFrameS"></small></label>
+      <textarea data-k="firstFrame" rows="4" data-ph="firstFramePh"></textarea>
+      <label><span data-t="textLock"></span> <small data-t="textLockS"></small></label>
+      <input data-k="textLock" data-ph="textLockPh">
+      <label><span data-t="plates"></span> <small data-t="platesS"></small></label>
+      <div id="plates"></div>
+      <div class="actions"><button type="button" class="btn" id="addPlate" data-t="addPlate"></button></div>
+    </section>
+
+    <section class="step" id="shotsStep">
+      <h2><span>4</span><b data-t="s4"></b></h2>
+      <p class="hint" data-t="s4h"></p>
+      <div id="shots"></div>
+      <div class="actions">
+        <button type="button" class="btn" id="addShot" data-t="addShot"></button>
+        <button type="button" class="btn" id="even" data-t="even"></button>
+      </div>
+    </section>
+
+    <section class="step">
+      <h2><span>5</span><b data-t="s5"></b></h2>
+      <p class="hint" data-t="s5h"></p>
+      <div class="row">
+        <div><label data-t="stylePreset"></label><select data-k="stylePreset" id="stylePreset"></select></div>
+        <div><label data-t="lightPreset"></label><select data-k="lightPreset" id="lightPreset"></select></div>
+      </div>
+      <label data-t="style"></label><textarea data-k="style" rows="6"></textarea>
+      <label data-t="surface"></label><textarea data-k="surface" rows="3"></textarea>
+      <label data-t="lighting"></label><textarea data-k="lighting" rows="5"></textarea>
+      <label data-t="grade"></label><textarea data-k="grade" rows="2"></textarea>
+      <label data-t="physics"></label><textarea data-k="physics" rows="3"></textarea>
+      <label data-t="performance"></label><textarea data-k="performance" rows="3"></textarea>
+      <label><span data-t="finalLocks"></span> <small data-t="finalLocksS"></small></label>
+      <textarea data-k="finalLocks" rows="2" data-ph="finalLocksPh"></textarea>
+    </section>
+  </div>
+
+  <aside class="out" id="out">
+    <div class="out-head">
+      <h2 data-t="outTitle"></h2>
+      <span class="score" id="score"></span>
+    </div>
+    <ul class="checks" id="checks"></ul>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" data-mode="full" data-t="tabFull"></button>
+      <button type="button" role="tab" data-mode="shots" data-t="tabShots"></button>
+    </div>
+    <p class="tabhint" id="tabhint"></p>
+    <div class="actions" style="margin:0 0 10px">
+      <button type="button" class="btn sun" id="copy" data-t="copy"></button>
+      <button type="button" class="btn" id="dl" data-t="dl"></button>
+      <button type="button" class="btn" id="meta" data-t="meta"></button>
+    </div>
+    <pre id="prompt" tabindex="0"></pre>
+  </aside>
+</main>
+
+<p class="foot" data-t="foot"></p>
+
+<div class="bar">
+  <button type="button" class="btn" id="see" data-t="see"></button>
+  <button type="button" class="btn sun" id="copy2" data-t="copy"></button>
+</div>
+
+<datalist id="lenses">
+  <option value="24mm low-angle wide"><option value="28mm wide"><option value="35mm wide establishing">
+  <option value="35mm two-shot"><option value="50mm medium"><option value="50mm close-up">
+  <option value="85mm close-up"><option value="100mm macro detail"><option value="18mm overhead wide">
+</datalist>
+<datalist id="moves">
+  <option value="LOCKED."><option value="LOCKED. Hold for the reaction."><option value="Slow push-in.">
+  <option value="Slow pull-back."><option value="FAST tracking alongside the action."><option value="Whip pan between the characters.">
+  <option value="SNAP ZOOM into the face."><option value="Gentle handheld drift."><option value="Slow orbit around the subject.">
+  <option value="Crane up to reveal the whole scene.">
+</datalist>
+
+<script>
+/* ---------- presets (prompt text is always English) ---------- */
+const GENRES={
+  comedy:{pt:"Comédia",en:"Comedy",word:"comedy",perf:"Exaggerated, readable cartoon acting.\nBig, clear facial expressions.\nSnappy comedic timing with a pause before each punch."},
+  heartfelt:{pt:"Emotivo",en:"Heartfelt",word:"heartfelt",perf:"Gentle, sincere acting. Small gestures carry the emotion.\nEyes and posture tell the story.\nUnhurried timing; let each beat breathe."},
+  suspense:{pt:"Suspense",en:"Suspense",word:"suspense",perf:"Controlled, tense acting. Stillness before every move.\nEyes dart; breath is held.\nSlow build, sharp release."},
+  action:{pt:"Ação",en:"Action",word:"action",perf:"Bold, athletic acting with clear silhouettes.\nStrong anticipation before every move, clean follow-through after.\nFast timing with one clear beat per shot."},
+  wonder:{pt:"Encantamento",en:"Wonder",word:"wonder-filled",perf:"Wide-eyed, curious acting.\nSlow reactions of awe; small delighted gestures.\nCalm timing with room to look around."}
+};
+const DIALOGUE={
+  none:{pt:"Sem diálogo",en:"No dialogue",line:"Pure visual storytelling. NO dialogue."},
+  sfx:{pt:"Só sons e reações",en:"Sounds and reactions only",line:"NO spoken words. Only grunts, gasps, laughs and sound effects."},
+  lines:{pt:"Com falas (escreva na ação)",en:"Spoken lines (write them in the action)",line:"Short spoken lines only where written in ACTION. No other speech."}
+};
+const STYLES={
+  painterly:{pt:"3D pictórico pintado à mão",en:"Painterly hand-painted 3D",
+    style:"PAINTERLY STYLIZED 3D with a HAND-PAINTED 2D FINISH.\nLooks like a modern animated feature painted by hand.\nSoft painted gradients. Simple, clean graphic shapes. Minimal fine texture.\nCharacters are CARICATURED: bold proportions, big expressive faces.\nBackgrounds simplified and hazy, with soft atmospheric depth.\nSoft painted shading, NOT plastic, NOT glossy CG, NOT photoreal.",
+    surface:"Walls, ground and props painted with soft, simplified brushwork.\nFoliage and fabric as brushy shapes, not fine detail.\nPainterly finish on every surface, NOT photoreal.",
+    physics:"Cartoon physics with real weight.\nSlight squash on impact and stretch on acceleration.\nLight objects drift and scatter in the wake of fast movement.",
+    lock:"Painterly stylized 3D with a hand-painted 2D finish in EVERY frame."},
+  clay:{pt:"Massinha stop-motion",en:"Claymation stop-motion",
+    style:"STOP-MOTION CLAYMATION look.\nHandmade clay characters with visible thumbprints and soft tool marks.\nMiniature physical sets built from clay, card and wire.\nAnimated on twos for a slightly stepped, handmade rhythm.\nShallow depth of field, like macro photography of a tabletop set.\nNOT smooth CG, NOT photoreal humans.",
+    surface:"Matte clay with fingerprints and tiny seams.\nSets show real miniature materials: painted card, felt, wire, wood.\nSmall imperfections on every surface.",
+    physics:"Tabletop stop-motion physics.\nMovement is slightly stepped, with weight and firm contact on the ground.\nSmoke, water and dust are made of cotton, gel and clay.",
+    lock:"Handmade claymation stop-motion look in EVERY frame."},
+  cel:{pt:"2D desenhado à mão",en:"Hand-drawn 2D cel",
+    style:"HAND-DRAWN 2D CEL ANIMATION.\nClean, confident ink outlines with flat color fills and one layer of shadow.\nBackgrounds painted in gouache with visible brush texture.\nCharacters have clear silhouettes and expressive, simplified faces.\nNOT 3D, NOT vector-flat, NOT photoreal.",
+    surface:"Flat color with a single soft shadow tone on characters.\nGouache backgrounds with dry-brush texture and soft edges.\nHighlights as simple painted shapes.",
+    physics:"Classic hand-drawn physics.\nClear anticipation, follow-through and overlapping action.\nHair, cloth and tails trail behind the movement.",
+    lock:"Hand-drawn 2D cel animation with gouache backgrounds in EVERY frame."},
+  paper:{pt:"Recorte de papel",en:"Paper cut-out",
+    style:"PAPER CUT-OUT STOP-MOTION.\nCharacters and sets built from layered cut paper and card.\nVisible paper grain, cut edges and small drop shadows between layers.\nLimited, jointed movement like hinged paper puppets.\nNOT 3D CG, NOT photoreal.",
+    surface:"Textured craft paper with fibrous grain.\nSlightly uneven scissor-cut edges.\nLayers sit a few millimeters apart and cast soft shadows.",
+    physics:"Paper puppet physics.\nParts rotate on hinges; nothing bends smoothly.\nWeather and effects are paper shapes sliding across the frame.",
+    lock:"Layered paper cut-out look in EVERY frame."},
+  felt:{pt:"Feltro e lã stop-motion",en:"Felted wool stop-motion",
+    style:"NEEDLE-FELTED WOOL STOP-MOTION.\nCharacters and props made of soft felted wool, fuzzy fibers catching the light.\nMiniature handmade sets of fabric, wood and cardboard.\nAnimated on twos, gentle and tactile.\nNOT smooth CG, NOT photoreal.",
+    surface:"Fuzzy wool fibers on every character.\nStitched fabric, raw wood and painted cardboard on the sets.\nSoft, matte materials; nothing shiny.",
+    physics:"Soft tabletop physics.\nCharacters move with light, bouncy weight.\nSmoke and clouds are tufts of cotton wool.",
+    lock:"Needle-felted wool stop-motion look in EVERY frame."}
+};
+const LIGHTS={
+  golden:{pt:"Fim de tarde dourado",en:"Golden hour",
+    lighting:"Warm golden-hour sun, low in the sky.\nLONG soft shadows across the ground.\nStrong warm rim light on every edge facing the sun.\nCool blue-violet shadows on the shaded sides.\nSoft haze in the distance.",
+    grade:"Warm oranges, peach and rust against cool blue-violet shadows.\nRich but soft saturation.",lock:"Golden-hour warm light, blue-violet shadows, glowing rim light."},
+  morning:{pt:"Manhã clara",en:"Clear morning",
+    lighting:"Cool, clear early-morning light.\nLow sun with pale yellow highlights.\nSoft blue shadows and a thin mist near the ground.\nGentle, even contrast.",
+    grade:"Pale yellows and soft pinks against fresh blues and greens.\nLight, airy saturation.",lock:"Cool, clear morning light with pale yellow highlights."},
+  overcast:{pt:"Dia nublado suave",en:"Soft overcast",
+    lighting:"Soft overcast daylight.\nNo hard shadows; gentle contact shadows only.\nEven, diffused light on faces.\nMuted sky.",
+    grade:"Muted, gentle palette with ONE strong accent color.\nLow contrast, soft saturation.",lock:"Soft overcast light, no hard shadows."},
+  night:{pt:"Noite com luzes quentes",en:"Night with warm lights",
+    lighting:"Night scene lit by practical lights: windows, lamps and signs.\nWarm pools of light against deep blue darkness.\nSoft glow and bloom around every lamp.\nFaces always readable, never lost in black.",
+    grade:"Deep blues and teals with warm amber accents.\nRich saturation inside the pools of light.",lock:"Night lighting: warm practical lights against deep blue."},
+  storm:{pt:"Tempestade ao entardecer",en:"Stormy dusk",
+    lighting:"Stormy dusk under heavy clouds.\nCold blue-grey ambient light with soft rain haze.\nWarm light only from lamps and flames, glowing strongly against the cold.\nFaces always readable.",
+    grade:"Cold slate blues and sea greens with small hot amber accents.\nSoft, moody saturation.",lock:"Stormy blue dusk with small warm light sources."},
+  interior:{pt:"Interior aconchegante",en:"Cozy interior",
+    lighting:"Cozy interior lit by a window and ONE warm lamp.\nSoft window light from one side, warm lamp fill from the other.\nGentle shadows, dust motes in the light beam.",
+    grade:"Warm ambers and soft browns with cool window-blue accents.\nSoft, cozy saturation.",lock:"Cozy interior light: soft window light plus one warm lamp."},
+  sunsetIn:{pt:"Interior com sol de fim de tarde",en:"Indoors, sunset through windows",
+    lighting:"Indoor scene lit by a low golden sunset coming through big windows.\nLONG warm beams and long shadows across the floor.\nWarm rim light on every edge facing the windows.\nCool blue-violet shadows deeper inside the room.\nSoft haze in the light beams.",
+    grade:"Warm oranges and peach in the light beams against cool blue-violet shadows.\nRich but soft saturation.",lock:"Indoor golden sunset through the windows, blue-violet shadows."},
+  store:{pt:"Loja ou escritório iluminado",en:"Bright store or office",
+    lighting:"Bright, even overhead lighting of a store or office.\nSoft shadows straight under objects and characters.\nClean highlights on shiny floors and surfaces.\nOne slightly warmer accent light on the main subject.",
+    grade:"Clean, bright palette with crisp whites and saturated product colors.\nFresh, high-key look.",lock:"Bright, even overhead indoor light."}
+};
+
+/* ---------- interface text ---------- */
+const T={pt:{
+  h1:"Gerador de prompt de animação",
+  sub:"Preencha a história, os personagens e as tomadas. O prompt sai em inglês, com todas as travas de consistência, pronto para colar no modelo de vídeo.",
+  reel:"Linha do tempo das tomadas",s1:"História",s1h:"O que acontece, em poucas linhas. Escreva em inglês: os modelos de vídeo respondem melhor.",
+  title:"Título de trabalho",titlePh:"The Last Match",dur:"Duração (s)",aspect:"Formato",genre:"Tom",dialogue:"Som e fala",
+  logline:"A história, uma frase por linha",loglineS:"onde, quem, o conflito, a virada final",
+  loglinePh:"A stormy dusk on a tiny rocky island.\nThe lighthouse lamp is OUT and a boat is heading for the rocks.\nThe keeper has ONE match left...",
+  refs:"Imagens de referência",refsS:"deixe vazio para gerar só com texto",refsPh:"IMAGE 1: character sheet of the keeper. Use it for his design only.",
+  example:"Carregar exemplo",reset:"Limpar tudo",
+  s2:"Personagens",s2h:"Cada personagem precisa de corpo, roupa e personalidade. É isso que mantém o desenho idêntico do primeiro ao último quadro.",
+  addChar:"Adicionar personagem",cName:"Nome",cNick:"Apelido",cLook:"Corpo e rosto",cWard:"Roupa e cores",cProp:"Veículo ou objeto",cPers:"Personalidade",
+  cNamePh:"THE KEEPER",cNickPh:"OLD BRINE",cLookPh:"Short, barrel-shaped old man, huge white beard",cWardPh:"Yellow raincoat, navy knit cap",cPropPh:"Carries a single matchbox",cPersPh:"stubborn, grumpy, easily flustered",
+  remove:"Remover",char:"Personagem",
+  s3:"Cenário e travas",s3h:"Um mapa do lugar e as regras que não podem mudar entre as tomadas.",
+  location:"Mapa do cenário",locationPh:"A tiny rocky island with ONE red-and-white striped lighthouse.\nA round lamp room at the top with glass windows all around.",
+  blocking:"Posições e entradas",blockingS:"quem vem de onde",blockingPh:"The keeper stands at the lamp, frame center.\nThe gull perches on the open window, FRAME RIGHT.",
+  scale:"Trava de escala",scaleS:"tamanhos relativos",scalePh:"The gull is the size of his head.\nThe lamp is as tall as he is.",
+  continuity:"Continuidade extra",continuityS:"cores e objetos que nunca mudam",continuityPh:"The lamp stays dark until the final shot.\nRaincoat stays YELLOW.",
+  firstFrame:"Primeiro quadro",firstFrameS:"o que se vê antes de qualquer movimento",firstFramePh:"Wide view of the island at stormy dusk.\nThe lighthouse is dark.",
+  textLock:"Texto visível na cena",textLockS:"placas, letreiros; vazio = nenhum texto",textLockPh:'A blue sign reads exactly "OPEN"',
+  s4:"Tomadas",s4h:"Uma ação clara por tomada. A soma das durações precisa bater com a duração total.",
+  addShot:"Adicionar tomada",even:"Dividir o tempo por igual",shot:"Tomada",sLen:"Segundos",sLens:"Lente",sMove:"Câmera",sAct:"Ação, uma frase por linha",
+  sActPh:"He strikes the match. A tiny flame.\nThe gull leans in and blows it out.",
+  s5:"Visual",s5h:"Escolha um estilo e uma luz. Os textos abaixo podem ser editados à vontade.",
+  stylePreset:"Estilo de animação",lightPreset:"Luz",style:"Estilo",surface:"Superfícies",lighting:"Iluminação",grade:"Cor",physics:"Física",performance:"Atuação",
+  finalLocks:"Travas finais extras",finalLocksS:"o que não pode falhar de jeito nenhum",finalLocksPh:"ONE match. ONE lamp. The gull lights it.",
+  outTitle:"Prompt",copy:"Copiar prompt",copied:"Copiado",dl:"Baixar .txt",meta:"Copiar pedido para IA",metaDone:"Pedido copiado",see:"Ver prompt",
+  score:(a,b)=>a+" de "+b+" travas",sumOk:(a,b)=>a+" s de "+b+" s",sumBad:(a,b)=>a+" s de "+b+" s, ajuste as tomadas",
+  foot:"Tudo fica salvo só neste navegador. “Copiar pedido para IA” gera uma instrução para colar no Claude ou outro modelo de texto: ele transforma a sua ideia (pode ser em português) num prompt completo neste mesmo formato.",
+  confirmReset:"Apagar tudo e começar do zero?",
+  k1:"História com pelo menos 3 linhas",k2:"Todo personagem tem corpo, roupa e personalidade",k3:"Cenário descrito",k4:"Posições e entradas definidas",k5:"Trava de escala",k6:"Primeiro quadro descrito",k7:"Soma das tomadas igual à duração",k8:"Toda tomada tem lente, câmera e ação",k9:"Nenhuma tomada acima de 8 s",k10:"Estilo e iluminação preenchidos",k11:"Toda tomada diz quem aparece",k12:"Luz combina com o cenário (interior ou exterior)",
+  sWho:"Quem aparece nesta tomada",sWhoNone:"Dê nome aos personagens no passo 2 para marcar aqui.",sStart:"Quadro inicial",sEnd:"Quadro final",sKfS:"opcional, para gerar os keyframes",
+  sStartPh:"Wide view: the keeper holds up the matchbox, the gull watches from the window",sEndPh:"Same view: the flame is out, smoke curls, the keeper glares at the gull",
+  tabFull:"Prompt único",tabShots:"Por tomada + keyframes",
+  hintFull:"Um prompt para o filme todo. Bom para modelos na nuvem que fazem vários cortes num só clipe.",
+  hintShots:"Um prompt curto por tomada, só com quem aparece nela, mais o quadro inicial e o final para gerar os keyframes. É o que funciona no MiniMax H3 local (modo primeiro + último quadro).",
+  copyMiss:n=>"Copiar (faltam "+n+")",inFrame:"In frame",
+  plates:"Cenários para keyframes",platesS:"um por ponto de vista; vazio = um cenário só, o mapa acima",addPlate:"Adicionar cenário",plate:"Cenário",
+  pName:"Nome",pNamePh:"LAMP ROOM",pDesc:"O que se vê, vazio, deste ponto de vista",pDescPh:"Inside the round lamp room: the big brass lamp in the center, glass windows all around, the sea outside",
+  sPlate:"Cenário desta tomada",sPlateDefault:"Mapa do cenário (único)",
+  lightWarn:"O cenário parece ser um interior, mas a luz escolhida é de exterior. Use “Interior com sol de fim de tarde”, “Loja ou escritório” ou “Interior aconchegante”."
+},en:{
+  h1:"Animation prompt generator",
+  sub:"Fill in the story, the characters and the shots. The prompt comes out in English with every consistency lock, ready to paste into the video model.",
+  reel:"Shot timeline",s1:"Story",s1h:"What happens, in a few lines. Write in English: video models respond better.",
+  title:"Working title",titlePh:"The Last Match",dur:"Duration (s)",aspect:"Format",genre:"Tone",dialogue:"Sound and speech",
+  logline:"The story, one sentence per line",loglineS:"where, who, the conflict, the final turn",
+  loglinePh:"A stormy dusk on a tiny rocky island.\nThe lighthouse lamp is OUT and a boat is heading for the rocks.\nThe keeper has ONE match left...",
+  refs:"Reference images",refsS:"leave empty for text-only generation",refsPh:"IMAGE 1: character sheet of the keeper. Use it for his design only.",
+  example:"Load example",reset:"Clear everything",
+  s2:"Characters",s2h:"Each character needs a body, an outfit and a personality. That is what keeps the design identical from first frame to last.",
+  addChar:"Add character",cName:"Name",cNick:"Nickname",cLook:"Body and face",cWard:"Outfit and colors",cProp:"Vehicle or prop",cPers:"Personality",
+  cNamePh:"THE KEEPER",cNickPh:"OLD BRINE",cLookPh:"Short, barrel-shaped old man, huge white beard",cWardPh:"Yellow raincoat, navy knit cap",cPropPh:"Carries a single matchbox",cPersPh:"stubborn, grumpy, easily flustered",
+  remove:"Remove",char:"Character",
+  s3:"Location and locks",s3h:"A map of the place and the rules that cannot change between shots.",
+  location:"Location map",locationPh:"A tiny rocky island with ONE red-and-white striped lighthouse.\nA round lamp room at the top with glass windows all around.",
+  blocking:"Positions and entrances",blockingS:"who comes from where",blockingPh:"The keeper stands at the lamp, frame center.\nThe gull perches on the open window, FRAME RIGHT.",
+  scale:"Scale lock",scaleS:"relative sizes",scalePh:"The gull is the size of his head.\nThe lamp is as tall as he is.",
+  continuity:"Extra continuity",continuityS:"colors and objects that never change",continuityPh:"The lamp stays dark until the final shot.\nRaincoat stays YELLOW.",
+  firstFrame:"First frame",firstFrameS:"what is visible before anything moves",firstFramePh:"Wide view of the island at stormy dusk.\nThe lighthouse is dark.",
+  textLock:"Visible text in the scene",textLockS:"signs, lettering; empty = no text at all",textLockPh:'A blue sign reads exactly "OPEN"',
+  s4:"Shots",s4h:"One clear action per shot. The shot lengths must add up to the total duration.",
+  addShot:"Add shot",even:"Split time evenly",shot:"Shot",sLen:"Seconds",sLens:"Lens",sMove:"Camera",sAct:"Action, one sentence per line",
+  sActPh:"He strikes the match. A tiny flame.\nThe gull leans in and blows it out.",
+  s5:"Look",s5h:"Pick a style and a light. The text below is yours to edit.",
+  stylePreset:"Animation style",lightPreset:"Light",style:"Style",surface:"Surfaces",lighting:"Lighting",grade:"Color",physics:"Physics",performance:"Performance",
+  finalLocks:"Extra final locks",finalLocksS:"what must not fail under any circumstance",finalLocksPh:"ONE match. ONE lamp. The gull lights it.",
+  outTitle:"Prompt",copy:"Copy prompt",copied:"Copied",dl:"Download .txt",meta:"Copy AI request",metaDone:"Request copied",see:"See prompt",
+  score:(a,b)=>a+" of "+b+" locks",sumOk:(a,b)=>a+" s of "+b+" s",sumBad:(a,b)=>a+" s of "+b+" s, adjust the shots",
+  foot:"Everything is saved only in this browser. “Copy AI request” builds an instruction to paste into Claude or another text model: it turns your idea into a complete prompt in this same format.",
+  confirmReset:"Erase everything and start from scratch?",
+  k1:"Story has at least 3 lines",k2:"Every character has body, outfit and personality",k3:"Location described",k4:"Positions and entrances set",k5:"Scale lock",k6:"First frame described",k7:"Shot lengths add up to the duration",k8:"Every shot has lens, camera and action",k9:"No shot longer than 8 s",k10:"Style and lighting filled in",k11:"Every shot says who is in it",k12:"Light matches the location (indoors or outdoors)",
+  sWho:"Who is in this shot",sWhoNone:"Name the characters in step 2 to tick them here.",sStart:"Start frame",sEnd:"End frame",sKfS:"optional, for generating keyframes",
+  sStartPh:"Wide view: the keeper holds up the matchbox, the gull watches from the window",sEndPh:"Same view: the flame is out, smoke curls, the keeper glares at the gull",
+  tabFull:"Single prompt",tabShots:"Per shot + keyframes",
+  hintFull:"One prompt for the whole film. Good for cloud models that cut between shots inside one clip.",
+  hintShots:"One short prompt per shot, with only the characters in it, plus the start and end frame to generate keyframes. This is what works on local MiniMax H3 (first + last frame mode).",
+  copyMiss:n=>"Copy ("+n+" missing)",inFrame:"In frame",
+  plates:"Sets for keyframes",platesS:"one per point of view; empty = a single set, the map above",addPlate:"Add set",plate:"Set",
+  pName:"Name",pNamePh:"LAMP ROOM",pDesc:"What is seen, empty, from this point of view",pDescPh:"Inside the round lamp room: the big brass lamp in the center, glass windows all around, the sea outside",
+  sPlate:"Set for this shot",sPlateDefault:"Location map (single)",
+  lightWarn:"The location looks like an interior, but the chosen light is outdoor light. Use “Indoors, sunset through windows”, “Bright store or office” or “Cozy interior”."
+}};
+
+/* ---------- state ---------- */
+const KEY="nwl-animation-prompt-v1";
+function blank(){
+  return {lang:"pt",title:"",dur:20,aspect:"16:9 horizontal",genre:"comedy",dialogue:"none",logline:"",refs:"",
+    chars:[{name:"",nick:"",look:"",ward:"",prop:"",pers:""}],
+    location:"",blocking:"",scale:"",continuity:"",firstFrame:"",textLock:"",plates:[],
+    shots:[{len:4,lens:"35mm wide establishing",move:"Slow push-in.",act:""},{len:4,lens:"50mm close-up",move:"LOCKED.",act:""},{len:4,lens:"50mm close-up",move:"LOCKED.",act:""},{len:4,lens:"24mm low-angle wide",move:"FAST tracking alongside the action.",act:""},{len:4,lens:"35mm two-shot",move:"LOCKED. Hold for the reaction.",act:""}],
+    stylePreset:"painterly",lightPreset:"golden",mode:"full",
+    style:STYLES.painterly.style,surface:STYLES.painterly.surface,physics:STYLES.painterly.physics,
+    lighting:LIGHTS.golden.lighting,grade:LIGHTS.golden.grade,performance:GENRES.comedy.perf,finalLocks:""};
+}
+function example(){
+  const s=blank();
+  Object.assign(s,{title:"The Last Match",dur:20,genre:"comedy",dialogue:"sfx",
+    logline:"A stormy dusk on a tiny rocky island with ONE old lighthouse.\nThe lamp is OUT and a small fishing boat is heading for the rocks.\nThe keeper has ONE match left.\nEvery time he strikes it, a cheeky seagull blows it out.\nWhen he gives up, the gull lights the lamp itself with a stolen lighter.",
+    chars:[
+      {name:"THE KEEPER",nick:"OLD BRINE",look:"Short, barrel-shaped old man, huge white beard, tiny eyes under bushy brows",ward:"Bright YELLOW raincoat, navy knit cap, black rubber boots",prop:"Carries a small red matchbox",pers:"stubborn, grumpy, easily flustered"},
+      {name:"THE GULL",nick:"PIP",look:"Plump white seagull with grey wings, oversized orange beak, one feather sticking up like a raised eyebrow",ward:"",prop:"Keeps a nest full of shiny stolen junk",pers:"cheeky, smug, secretly helpful"}],
+    location:"A tiny rocky island with ONE red-and-white striped lighthouse.\nA round lamp room at the top with glass windows all around.\nA big brass lamp stands in the center of the room.\nThe gull's nest sits on the railing outside, full of shiny junk.\nDark sea all around.",
+    blocking:"The keeper stands at the lamp, frame center.\nThe gull perches on the open window, FRAME RIGHT.\nThe boat light is always visible through the windows at FRAME LEFT.",
+    scale:"The keeper is short. The lamp is as tall as he is.\nThe gull is the size of his head.\nThe boat is TINY in the distance.",
+    continuity:"The lamp stays DARK until the final shot.\nRaincoat stays YELLOW. Lighthouse stripes stay RED and WHITE.",
+    firstFrame:"Wide view of the island at stormy dusk.\nThe lighthouse is dark.\nA small boat light bobs far out at sea, frame left.\nA white gull sits on the top railing.",
+    shots:[
+      {len:3,lens:"35mm wide establishing",move:"Slow push-in toward the lamp room.",act:"Stormy dusk. Waves hit the rocks.\nThe lighthouse is dark.\nA boat light bobs toward the island.",who:[1],plate:0,start:"Wide view of the dark lighthouse on the rocky island at stormy dusk, a tiny boat light far out at sea on the left, the gull small on the top railing",end:"Same view, closer to the lamp room, the boat light a little nearer"},
+      {len:3,lens:"50mm close-up",move:"LOCKED.",act:"Inside the lamp room. The keeper opens his matchbox.\nONE match left. He gulps.",who:[0],plate:1,start:"Close-up of the keeper in the dark lamp room holding a small red matchbox",end:"Same close-up: the matchbox is open with ONE match inside, the keeper gulps, worried"},
+      {len:4,lens:"50mm medium",move:"LOCKED.",act:"He strikes the match. A tiny flame.\nThe gull leans in from the window and blows it out with one puff.\nThe keeper turns slowly, furious.",who:[0,1],plate:1},
+      {len:4,lens:"24mm low-angle wide",move:"FAST tracking around the lamp.",act:"The keeper chases the gull around the lamp, waving his cap.\nThe gull hops just out of reach every time.\nThe boat light grows bigger in the window.",who:[0,1],plate:1},
+      {len:3,lens:"85mm close-up",move:"SNAP ZOOM into the gull.",act:"The keeper slumps against the lamp, defeated.\nThe gull tilts its head.\nIt drops a shiny lighter from its beak and flicks it with one foot.",who:[0,1],plate:1},
+      {len:3,lens:"28mm wide",move:"LOCKED. Hold for the ending.",act:"The lamp bursts into warm light. The beam sweeps over the sea.\nThe boat turns away safely.\nThe keeper and the gull stand side by side. The gull winks.",who:[0,1],plate:1}],
+    plates:[{name:"ISLAND",desc:"Wide view of the tiny rocky island at stormy dusk, the red-and-white striped lighthouse with its dark lamp room on top, rough sea all around"},
+      {name:"LAMP ROOM",desc:"Inside the round lamp room: the big brass lamp in the center, glass windows all around showing the dark sea, an open window on the right with the gull's nest outside"}],
+    lightPreset:"storm",lighting:LIGHTS.storm.lighting,grade:LIGHTS.storm.grade,
+    finalLocks:"ONE match. ONE lamp. The gull lights it."});
+  return s;
+}
+let S;
+try{S=Object.assign(blank(),JSON.parse(localStorage.getItem(KEY)||"null")||{})}catch(e){S=blank()}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const t=k=>T[S.lang][k];
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const clean=s=>String(s||"").split("\n").map(x=>x.trim()).filter(Boolean);
+const num=v=>Math.max(0,Math.round((parseFloat(v)||0)*2)/2);
+function fmt(x){const m=Math.floor(x/60),s=x-m*60,w=Math.floor(s),f=Math.round((s-w)*10);return m+":"+String(w).padStart(2,"0")+(f?"."+f:"")}
+function spans(){let c=0;return S.shots.map(sh=>{const a=c;c+=num(sh.len);return [a,c]})}
+const total=()=>S.shots.reduce((a,sh)=>a+num(sh.len),0);
+const stop=s=>/[.!?"”]$/.test(s)?s:s+".";
+const named=()=>S.chars.map((c,i)=>[c,i]).filter(([c])=>c.name.trim());
+const whoOf=sh=>(sh.who||[]).map(i=>S.chars[i]).filter(c=>c&&c.name.trim());
+const cName=c=>c.name.trim().toUpperCase();
+const cDesc=c=>cName(c)+" ("+[c.look,c.ward,c.prop].map(x=>clean(x).join(", ")).filter(Boolean).join("; ")+")";
+const styleLock=()=>(STYLES[S.stylePreset]||{}).lock||clean(S.style)[0]||"";
+const lightLock=()=>(LIGHTS[S.lightPreset]||{}).lock||clean(S.lighting)[0]||"";
+const INDOOR=/\b(inside|interior|indoors?|store|supermarket|shop|office|kitchen|corridor|aisle|bakery|restaurant|dentro|interior|loja|mercado|supermercado|sala|quarto|cozinha|escrit[oó]rio|corredor|padaria)\b/i;
+const OUTDOOR_LIGHT=["golden","morning","overcast","storm"];
+const lightOk=()=>!(INDOOR.test(S.location)&&OUTDOOR_LIGHT.includes(S.lightPreset));
+
+/* ---------- prompt assembly ---------- */
+function sections(){
+  const sp=spans(),n=S.shots.length,out=[];
+  const add=(h,lines)=>out.push([h,lines.filter(x=>x!==null&&x!==undefined)]);
+  const names=S.chars.map(c=>c.name.trim()).filter(Boolean);
+
+  add("SCENE CONTEXT",["A "+S.dur+"-second "+GENRES[S.genre].word+" short. One single continuous story.",...clean(S.logline),DIALOGUE[S.dialogue].line]);
+
+  const refs=clean(S.refs);
+  add("ACTIVE REFERENCES",refs.length
+    ?[...refs,"Use the references ONLY for what is stated above.","Everything else is defined in the sections below.","KEEP every design IDENTICAL from first frame to last."]
+    :["NONE. Text-only generation.","The ART STYLE is fully described in STYLE below.","ALL characters, props and the location are defined below.","KEEP every design IDENTICAL from first frame to last."]);
+
+  const ch=[];
+  S.chars.forEach((c,i)=>{
+    if(!(c.name+c.look+c.ward+c.prop+c.pers).trim())return;
+    if(ch.length)ch.push("");
+    ch.push((c.name.trim()||"CHARACTER "+(i+1)).toUpperCase()+(c.nick.trim()?' — "'+c.nick.trim().toUpperCase()+'"':""));
+    ch.push(...clean(c.look),...clean(c.ward),...clean(c.prop));
+    if(c.pers.trim())ch.push("Personality: "+c.pers.trim());
+  });
+  add("CHARACTERS",ch);
+  add("LOCATION MAP",[...clean(S.location),...clean(S.blocking),S.textLock.trim()?stop(S.textLock.trim()):null]);
+  add("SCALE LOCK",clean(S.scale));
+  add("CONTINUITY",["Same location, same time of day, same light direction in every shot.","Character designs NEVER change.","Wardrobe and colors NEVER change.",...clean(S.continuity)]);
+  add("FIRST FRAME / BLOCKING",clean(S.firstFrame));
+  add("FORMAT MODE",[S.aspect+".",n>1?"HARD CUTS at: "+sp.slice(0,-1).map(x=>fmt(x[1])).join(" / "):"ONE continuous shot. No cuts."]);
+  add("OPTICS",S.shots.map((sh,i)=>"SHOT "+(i+1)+" ("+fmt(sp[i][0])+"–"+fmt(sp[i][1])+"): "+(sh.lens.trim()||"35mm")));
+  add("CAMERA",S.shots.map((sh,i)=>"SHOT "+(i+1)+": "+stop(sh.move.trim()||"LOCKED")));
+  const act=[];
+  S.shots.forEach((sh,i)=>{
+    if(i)act.push("");
+    const w=whoOf(sh);
+    act.push("SHOT "+(i+1)+" ("+fmt(sp[i][0])+"–"+fmt(sp[i][1])+")",w.length?"In frame: ONLY "+w.map(cName).join(", ")+".":null,...clean(sh.act),i<n-1?"HARD CUT.":"Hold.");
+  });
+  add("ACTION",act);
+  add("PERFORMANCE",clean(S.performance));
+  add("SURFACE DETAIL",clean(S.surface));
+  add("PHYSICS",clean(S.physics));
+  add("LIGHTING",clean(S.lighting));
+  add("COLOR GRADE",clean(S.grade));
+  add("STYLE",[...clean(S.style),S.textLock.trim()?"NO readable text except what is stated in LOCATION MAP.":"NO readable text anywhere in frame.","NO text overlays.","NO subtitles.","NO watermark.","NO logos."]);
+  add("OUTPUT SETTINGS",[S.aspect.split(" ")[0]+".",S.dur+" seconds.",n>1?n+" shots with HARD CUTS at the listed timestamps.":"One continuous shot.","Clean, smooth animation. No flicker."]);
+  add("FINAL POSITIVE LOCKS",[(STYLES[S.stylePreset]||{}).lock,(LIGHTS[S.lightPreset]||{}).lock,names.length?names.map(x=>x.toUpperCase()).join(", ")+(names.length>1?" stay":" stays")+" IDENTICAL from first frame to last.":null,S.textLock.trim()?stop(S.textLock.trim()):null,...clean(S.finalLocks)]);
+  return out;
+}
+/* One short prompt per shot (only who is in it) plus start/end keyframe prompts,
+   reference sheets and an empty location plate: the local first+last-frame workflow. */
+// The lens text means little to an image model: say how the frame is filled.
+function framing(lens){
+  const l=lens.toLowerCase(),f=[];
+  if(/macro|detail/.test(l))f.push("Extreme close-up on one detail, it fills the frame");
+  else if(/85mm|100mm|tight/.test(l))f.push("Tight close-up: the face fills most of the frame");
+  else if(/close/.test(l))f.push("Close-up: head and shoulders fill most of the frame, the background soft and blurred");
+  else if(/two-shot/.test(l))f.push("Two-shot: both characters side by side fill the frame from the waist up");
+  else if(/medium/.test(l))f.push("Medium shot: the character from the waist up");
+  else if(/wide|establishing/.test(l))f.push("Wide shot: the whole place visible, characters small to medium in the frame");
+  if(/low-angle|low angle/.test(l))f.push("camera close to the floor looking slightly up");
+  if(/overhead/.test(l))f.push("camera high above looking down");
+  return f.length?stop(f.join(", ")):null;
+}
+const STILL=s=>clean(s).filter(x=>!/haze|mist|fog|bloom|dust motes|glow and bloom/i.test(x));
+function perShot(){
+  const sp=spans(),out=[],loc=clean(S.location);
+  const add=(h,lines)=>out.push([h,lines.filter(x=>x!==null&&x!==undefined&&x!=="")]);
+  const ch=named(),pl=(S.plates||[]).filter(p=>(p.name+p.desc).trim());
+  const plateOf=sh=>{const i=+sh.plate;return pl.length&&i>=0&&i<pl.length?i:-1};
+  const plateName=i=>i<0?"LOCATION":(pl[i].name.trim()||("SET "+(i+1))).toUpperCase();
+  const must=[...clean(S.continuity),...clean(S.scale)];
+  // A rule that names a character who is not in the shot would pull that character in: keep it out.
+  const keys=c=>{const n=c.name.trim().toLowerCase(),w=n.split(/\s+/);return [n,w[w.length-1],...clean(c.nick).map(x=>x.toLowerCase())].filter(x=>x.length>1)};
+  const mentions=(line,c)=>keys(c).some(k=>new RegExp("\\b"+k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","i").test(line));
+  const STOPW=new Set("there their these those which while about after before every other never always stays only whole single film shot frame same with from into that this have like than then they them were your".split(" "));
+  const words=s=>new Set((s.toLowerCase().match(/[a-z]{4,}/g)||[]).filter(x=>!STOPW.has(x)).map(x=>x.replace(/s$/,"")));
+  // A rule enters a frame only when it is about something in that frame: a character in it, or a word its own text uses.
+  // It also stays out when it describes the look of a character who is NOT in the frame (their outfit would jump onto someone else).
+  const looks=cs=>new Set(cs.flatMap(c=>[...words([c.look,c.ward,c.prop].join(" "))]));
+  const mustFor=(w,txt)=>{const out=named().map(([c])=>c).filter(c=>!w.includes(c)),tw=words(txt),inL=looks(w),outL=[...looks(out)].filter(x=>!inL.has(x));
+    const m=must.filter(l=>!out.some(c=>mentions(l,c))&&![...words(l)].some(x=>outL.includes(x))&&(w.some(c=>mentions(l,c))||[...words(l)].some(x=>tw.has(x))));
+    return m.length?"Must hold: "+m.map(stop).join(" "):null};
+  const lightKf=STILL(S.lighting).join(" ");
+  const look=[styleLock(),lightLock()].filter(Boolean).join(" ");
+  add("HOW TO USE",[
+    "1. Make one reference image per character with the REFERENCE prompts (text-to-image).",
+    "2. Make each empty "+(pl.length?"SET":"LOCATION")+" PLATE (text-to-image).",
+    "3. For each shot, make the START and END keyframes with an image-edit model: image 1 = the plate named in the prompt, then the references in the order the prompt lists them. Most local editors take only 3 images, so with 3 or more characters the prompt asks for ONE reference sheet with the others side by side (paste their reference images next to each other).",
+    "4. Generate each shot with the TAKE prompt in first + last frame mode (start = first image, end = last image).",
+    "5. Join the shots in order with hard cuts."]);
+  ch.forEach(([c])=>add("REFERENCE — "+cName(c),[
+    "Character design reference, full body, three-quarter view, on a plain warm light-grey background.",
+    cDesc(c)+".",c.pers.trim()?"Expression that shows: "+c.pers.trim()+".":null,
+    ...clean(S.style).slice(0,2),"Soft even studio light. No text."]));
+  // Without the style, the model picks its own look (and its own habits, like a lone figure in an empty corridor).
+  const envStyle=clean(S.style).filter(x=>!/character|face|silhouette|puppet/i.test(x));
+  const plateLines=desc=>["Background painting of an empty set for an animated film. 16:9 film frame.",...desc,...envStyle,...STILL(S.lighting),...clean(S.surface).slice(0,1),
+    ...clean(S.continuity).filter(x=>!/never change|wardrobe|design/i.test(x)&&!named().some(([c])=>mentions(x,c))),
+    "An empty set: only architecture, objects and light.",
+    S.textLock.trim()?stop(S.textLock.trim())+" No other readable text.":"No readable text, no logos."];
+  if(pl.length)pl.forEach((p,i)=>add("SET PLATE — "+plateName(i),plateLines([...clean(p.desc),loc.length?"It is part of this place: "+loc.join(" "):null])));
+  else add("LOCATION PLATE",plateLines(loc));
+  S.shots.forEach((sh,i)=>{
+    const w=whoOf(sh),acts=clean(sh.act).map(stop),frame=sh.lens.trim()||"35mm",pi=plateOf(sh);
+    const inFrame=w.length?"In frame: ONLY "+w.map(cDesc).join("; ")+". Nobody else appears.":"No characters in frame.";
+    // Local image editors take 3 pictures: the plate plus two references. A third character shares a sheet.
+    const refImgs=w.length<=2?w.map(c=>[c]):[[w[0]],w.slice(1)];
+    const refsLine="Image 1 is the "+(pi<0?"LOCATION PLATE":"SET PLATE «"+plateName(pi)+"»")+": keep that place, its layout and its light."+(w.length?" "+refImgs.map((g,j)=>"Image "+(j+2)+(g.length>1?" is a reference sheet with "+g.map((c,k)=>cName(c)+" ("+(k===0?"left":k===g.length-1?"right":"middle")+")").join(" and "):" is the reference of "+cName(g[0]))+": same design, outfit, colors and proportions.").join(" "):"");
+    const startTxt=(sh.start||"").trim()||("The first moment of the shot: "+(acts[0]||"the scene before anything moves"));
+    const endTxt=(sh.end||"").trim()||("The last moment of the shot: "+(acts[acts.length-1]||"the scene after the action"));
+    const kf=t=>["Film frame of the animated short, "+frame+".",framing(frame),stop(t),inFrame,mustFor(w,t),refsLine,styleLock(),lightKf,"Clear, crisp image with full contrast. 16:9, no readable text."];
+    add("SHOT "+(i+1)+" — "+fmt(sp[i][0])+"–"+fmt(sp[i][1])+" ("+num(sh.len)+" s) · plate: "+(pi<0?"LOCATION PLATE":"SET PLATE — "+plateName(pi)),[]);
+    add("SHOT "+(i+1)+" · KEYFRAME START",kf(startTxt));
+    add("SHOT "+(i+1)+" · KEYFRAME END",kf(endTxt));
+    add("SHOT "+(i+1)+" · TAKE PROMPT",[
+      "Animated film shot, "+frame+", camera: "+stop(sh.move.trim()||"LOCKED"),framing(frame),...acts,inFrame,mustFor(w,acts.join(" ")),look,
+      "Same place and same characters from the first to the last frame; nothing new enters the frame.",
+      DIALOGUE[S.dialogue].line]);
+  });
+  return out;
+}
+const blocks=()=>S.mode==="shots"?perShot():sections();
+const plain=()=>blocks().map(([h,l])=>"==== "+h+" ===="+(l.length?"\n"+l.join("\n"):"")).join("\n\n");
+
+function metaPrompt(){
+  const heads=sections().map(x=>x[0]);
+  return ["You are a director writing a prompt for a text-to-video AI model that makes short animated films.",
+  "Turn the IDEA below into one complete prompt. The idea may be written in Portuguese; write the prompt in English.",
+  "",
+  "Use EXACTLY these sections, in this order, each one headed as ==== NAME ====:",
+  heads.join(" / "),
+  "",
+  "Rules:",
+  "- Short declarative lines, one fact per line. No paragraphs.",
+  "- Put the few things that must not fail in CAPITALS (colors, counts, sizes, NO/NEVER rules).",
+  "- CHARACTERS: for each one give body and face, outfit with exact colors, vehicle or prop, and personality.",
+  "- LOCATION MAP: describe the place like a map, then say from which side of the frame each character enters.",
+  "- SCALE LOCK and CONTINUITY: state relative sizes and everything that never changes between shots.",
+  "- Split the "+S.dur+" seconds into 5 to 8 shots. Give every shot a time range, one lens (OPTICS), one camera move (CAMERA) and one clear action (ACTION). End each shot with HARD CUT. and the last one with Hold.",
+  "- The story needs a setup, an escalation and a final turn that lands in the last two shots.",
+  "- STYLE ends with: NO text overlays. NO subtitles. NO watermark. NO logos.",
+  "- FINAL POSITIVE LOCKS repeats, in five or six lines, the style, the light, the key colors and the ending.",
+  "- Output only the prompt.",
+  "",
+  "Fixed settings:",
+  "Format: "+S.aspect+". Duration: "+S.dur+" seconds. Tone: "+GENRES[S.genre].word+". "+DIALOGUE[S.dialogue].line,
+  "",
+  "STYLE to use:",...clean(S.style),
+  "",
+  "LIGHTING to use:",...clean(S.lighting),
+  "",
+  "IDEA:",
+  clean(S.logline).join("\n")||"[write your idea here]"].join("\n");
+}
+
+/* ---------- checks ---------- */
+function checks(){
+  const filled=S.chars.filter(c=>(c.name+c.look+c.ward+c.pers).trim());
+  return [
+    [clean(S.logline).length>=3,"k1"],
+    [filled.length>0&&filled.every(c=>c.look.trim()&&(c.ward.trim()||c.prop.trim())&&c.pers.trim()),"k2"],
+    [clean(S.location).length>=2,"k3"],
+    [clean(S.blocking).length>=1,"k4"],
+    [clean(S.scale).length>=1,"k5"],
+    [clean(S.firstFrame).length>=2,"k6"],
+    [total()===+S.dur,"k7"],
+    [S.shots.every(s=>s.lens.trim()&&s.move.trim()&&s.act.trim()),"k8"],
+    [S.shots.every(s=>num(s.len)<=8),"k9"],
+    [clean(S.style).length>=2&&clean(S.lighting).length>=2,"k10"],
+    [named().length===0||S.shots.every(s=>whoOf(s).length>0),"k11"],
+    [lightOk(),"k12"]];
+}
+// Where each check sends the cursor when clicked.
+const FIX={k1:'[data-k="logline"]',k2:"#chars",k3:'[data-k="location"]',k4:'[data-k="blocking"]',k5:'[data-k="scale"]',k6:'[data-k="firstFrame"]',
+  k7:"#shotsStep",k8:"#shotsStep",k9:"#shotsStep",k10:'[data-k="style"]',k11:"#shotsStep",k12:"#lightPreset"};
+function goFix(k){
+  const el=$(FIX[k]);if(!el)return;
+  el.scrollIntoView({block:"center"});el.classList.add("miss");setTimeout(()=>el.classList.remove("miss"),1800);
+  const f=el.matches("input,textarea,select")?el:el.querySelector("textarea,input");if(f)f.focus({preventScroll:true});
+}
+function copyLabels(){
+  const miss=checks().filter(c=>!c[0]).length;
+  ["#copy","#copy2"].forEach(id=>{const b=$(id);b.textContent=miss?t("copyMiss")(miss):t("copy");b.classList.toggle("warnb",!!miss);b.classList.toggle("sun",!miss)});
+}
+
+/* ---------- rendering ---------- */
+function opts(id,map,val){$(id).innerHTML=Object.keys(map).map(k=>'<option value="'+k+'"'+(k===val?" selected":"")+">"+esc(map[k][S.lang])+"</option>").join("")}
+function renderStatic(){
+  document.documentElement.lang=S.lang==="pt"?"pt-BR":"en";
+  document.title=t("h1")+" | NorthWindLab Studio";
+  document.querySelectorAll("[data-t]").forEach(e=>e.textContent=t(e.dataset.t));
+  document.querySelectorAll("[data-ph]").forEach(e=>e.placeholder=t(e.dataset.ph));
+  document.querySelectorAll("[data-lang]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===S.lang));
+  opts("#genre",GENRES,S.genre);opts("#dialogue",DIALOGUE,S.dialogue);opts("#stylePreset",STYLES,S.stylePreset);opts("#lightPreset",LIGHTS,S.lightPreset);
+  document.querySelectorAll("[data-k]").forEach(e=>{if(e.tagName!=="SELECT"||e.dataset.k==="aspect")e.value=S[e.dataset.k]});
+}
+function fld(list,i,f,label,ph,tag,extra){
+  const v=esc(S[list][i][f]),a='data-list="'+list+'" data-i="'+i+'" data-f="'+f+'" placeholder="'+esc(ph||"")+'" '+(extra||"");
+  return "<div><label>"+esc(label)+"</label>"+(tag==="ta"?"<textarea rows=\"3\" "+a+">"+v+"</textarea>":'<input value="'+v+'" '+a+">")+"</div>";
+}
+function renderLists(){
+  $("#chars").innerHTML=S.chars.map((c,i)=>'<div class="item char"><div class="item-head"><strong>'+esc(t("char"))+" "+(i+1)+"</strong>"+(S.chars.length>1?'<button type="button" class="btn sm" data-del="chars" data-i="'+i+'">'+esc(t("remove"))+"</button>":"")+"</div>"
+    +'<div class="row">'+fld("chars",i,"name",t("cName"),t("cNamePh"))+fld("chars",i,"nick",t("cNick"),t("cNickPh"))+"</div>"
+    +fld("chars",i,"look",t("cLook"),t("cLookPh"))+fld("chars",i,"ward",t("cWard"),t("cWardPh"))+fld("chars",i,"prop",t("cProp"),t("cPropPh"))+fld("chars",i,"pers",t("cPers"),t("cPersPh"))+"</div>").join("");
+  $("#shots").innerHTML=S.shots.map((s,i)=>'<div class="item" id="shot'+i+'"><div class="item-head"><strong>'+esc(t("shot"))+" "+(i+1)+' <span data-range="'+i+'"></span></strong>'+(S.shots.length>1?'<button type="button" class="btn sm" data-del="shots" data-i="'+i+'">'+esc(t("remove"))+"</button>":"")+"</div>"
+    +'<div class="row3">'+fld("shots",i,"len",t("sLen"),"","in",'type="number" min="0.5" max="30" step="0.5" inputmode="decimal"')+fld("shots",i,"lens",t("sLens"),"35mm wide","in",'list="lenses"')+fld("shots",i,"move",t("sMove"),"LOCKED.","in",'list="moves"')+"</div>"
+    +fld("shots",i,"act",t("sAct"),t("sActPh"),"ta")
+    +"<label>"+esc(t("sWho"))+"</label><div class=\"who\">"+(named().length?named().map(([c,ci])=>'<label><input type="checkbox" data-who="'+i+'" data-ci="'+ci+'"'+((s.who||[]).includes(ci)?" checked":"")+">"+esc(cName(c))+"</label>").join(""):'<span class="none">'+esc(t("sWhoNone"))+"</span>")+"</div>"
+    +plateSel(s,i)
+    +'<div class="row">'+fld("shots",i,"start",t("sStart")+" ("+t("sKfS")+")",t("sStartPh"),"ta")+fld("shots",i,"end",t("sEnd"),t("sEndPh"),"ta")+"</div>"
+    +"</div>").join("");
+  S.plates=S.plates||[];
+  $("#plates").innerHTML=S.plates.map((p,i)=>'<div class="item char" style="border-left-color:var(--dusk)"><div class="item-head"><strong>'+esc(t("plate"))+" "+(i+1)+'</strong><button type="button" class="btn sm" data-del="plates" data-i="'+i+'">'+esc(t("remove"))+"</button></div>"
+    +fld("plates",i,"name",t("pName"),t("pNamePh"))+fld("plates",i,"desc",t("pDesc"),t("pDescPh"),"ta")+"</div>").join("");
+}
+function plateSel(s,i){
+  const pl=(S.plates||[]).filter(p=>(p.name+p.desc).trim());
+  if(!pl.length)return "";
+  const cur=+(s.plate??-1);
+  return "<label>"+esc(t("sPlate"))+'</label><select data-list="shots" data-i="'+i+'" data-f="plate"><option value="-1">'+esc(t("sPlateDefault"))+"</option>"
+    +pl.map((p,j)=>'<option value="'+j+'"'+(cur===j?" selected":"")+">"+esc((p.name.trim()||t("plate")+" "+(j+1)).toUpperCase())+"</option>").join("")+"</select>";
+}
+function renderLive(){
+  const sp=spans(),tot=total(),d=+S.dur||0;
+  document.querySelectorAll("[data-range]").forEach(e=>{const x=sp[+e.dataset.range];e.textContent=x?"("+fmt(x[0])+"–"+fmt(x[1])+")":""});
+  $("#strip").innerHTML=S.shots.map((s,i)=>'<button type="button" data-go="'+i+'" style="flex:'+Math.max(num(s.len),.5)+' 1 0" aria-label="'+esc(t("shot"))+" "+(i+1)+'"><b>'+(i+1)+"</b>"+fmt(sp[i][0])+"</button>").join("")+(tot<d?'<span class="gap" style="flex:'+(d-tot)+' 1 0"></span>':"");
+  const sum=$("#sum");sum.textContent=(tot===d?t("sumOk"):t("sumBad"))(tot,d);sum.classList.toggle("bad",tot!==d);
+  const ck=checks();
+  $("#checks").innerHTML=ck.map(([ok,k])=>"<li"+(ok?' class="ok"':"")+">"+(ok?esc(t(k)):'<button type="button" data-fix="'+k+'">'+esc(t(k))+"</button>")+"</li>").join("");
+  $("#score").textContent=t("score")(ck.filter(c=>c[0]).length,ck.length);
+  document.querySelectorAll("[data-mode]").forEach(b=>b.setAttribute("aria-selected",b.dataset.mode===(S.mode||"full")));
+  $("#tabhint").textContent=(lightOk()?"":t("lightWarn")+" ")+t(S.mode==="shots"?"hintShots":"hintFull");
+  $("#prompt").innerHTML=blocks().map(([h,l])=>'<span class="h">==== '+esc(h)+" ====</span>"+(l.length?"\n"+esc(l.join("\n")):"")).join("\n\n");
+  copyLabels();
+  save();
+}
+function renderAll(){renderStatic();renderLists();renderLive()}
+
+/* ---------- events ---------- */
+function swap(field,oldV,newV){if(!S[field].trim()||S[field]===oldV)S[field]=newV}
+let prev={style:S.stylePreset,light:S.lightPreset,genre:S.genre};
+document.addEventListener("input",e=>{
+  const el=e.target;
+  if(el.dataset.who!==undefined){
+    const sh=S.shots[+el.dataset.who],ci=+el.dataset.ci;sh.who=(sh.who||[]).filter(x=>x!==ci);
+    if(el.checked)sh.who.push(ci);sh.who.sort((a,b)=>a-b);renderLive();return;
+  }
+  if(el.dataset.k){
+    const k=el.dataset.k;S[k]=k==="dur"?(parseInt(el.value)||0):el.value;
+    if(k==="stylePreset"){const o=STYLES[prev.style],n=STYLES[S.stylePreset];["style","surface","physics"].forEach(f=>swap(f,o[f],n[f]));prev.style=S.stylePreset;renderStatic()}
+    if(k==="lightPreset"){const o=LIGHTS[prev.light],n=LIGHTS[S.lightPreset];["lighting","grade"].forEach(f=>swap(f,o[f],n[f]));prev.light=S.lightPreset;renderStatic()}
+    if(k==="genre"){swap("performance",GENRES[prev.genre].perf,GENRES[S.genre].perf);prev.genre=S.genre;renderStatic()}
+  }else if(el.dataset.list){
+    S[el.dataset.list][+el.dataset.i][el.dataset.f]=el.value;
+    // A new or renamed character must show up in the shots' "who" boxes.
+    if((el.dataset.list==="chars"&&el.dataset.f==="name")||el.dataset.list==="plates"){const a=document.activeElement,id=[a.dataset.list,a.dataset.i,a.dataset.f],pos=a.selectionStart;renderLists();const b=document.querySelector('[data-list="'+id[0]+'"][data-i="'+id[1]+'"][data-f="'+id[2]+'"]');if(b){b.focus();try{b.setSelectionRange(pos,pos)}catch(_){}}}
+  }
+  else return;
+  renderLive();
+});
+async function copyText(txt,btn,doneKey,baseKey){
+  try{await navigator.clipboard.writeText(txt)}catch(e){const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(_){}ta.remove()}
+  btn.textContent=t(doneKey);setTimeout(()=>{btn.textContent=t(baseKey);copyLabels()},1600);
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.lang){S.lang=b.dataset.lang;renderAll();return}
+  if(b.dataset.fix){goFix(b.dataset.fix);return}
+  if(b.dataset.mode){S.mode=b.dataset.mode;renderLive();return}
+  if(b.dataset.del){
+    const i=+b.dataset.i;S[b.dataset.del].splice(i,1);
+    if(b.dataset.del==="chars")S.shots.forEach(sh=>sh.who=(sh.who||[]).filter(x=>x!==i).map(x=>x>i?x-1:x));
+    if(b.dataset.del==="plates")S.shots.forEach(sh=>{const v=+(sh.plate??-1);sh.plate=v===i?-1:v>i?v-1:v});
+    renderLists();renderLive();return}
+  if(b.dataset.go){const el=$("#shot"+b.dataset.go);if(el){el.scrollIntoView({block:"center"});const ta=el.querySelector("textarea");if(ta)ta.focus({preventScroll:true})}return}
+  switch(b.id){
+    case "addPlate":S.plates=S.plates||[];S.plates.push({name:"",desc:""});renderLists();renderLive();break;
+    case "addChar":S.chars.push({name:"",nick:"",look:"",ward:"",prop:"",pers:""});renderLists();renderLive();break;
+    case "addShot":{const left=Math.max(1,Math.min(8,(+S.dur||0)-total()));S.shots.push({len:left,lens:"50mm medium",move:"LOCKED.",act:"",who:[],start:"",end:""});renderLists();renderLive();break}
+    case "even":{const n=S.shots.length,base=Math.floor((+S.dur||0)/n*2)/2;S.shots.forEach(s=>s.len=base);S.shots[n-1].len=num((+S.dur||0)-base*(n-1));renderLists();renderLive();break}
+    case "example":{const l=S.lang;S=example();S.lang=l;prev={style:S.stylePreset,light:S.lightPreset,genre:S.genre};renderAll();break}
+    case "reset":if(confirm(t("confirmReset"))){const l=S.lang;S=blank();S.lang=l;prev={style:S.stylePreset,light:S.lightPreset,genre:S.genre};renderAll()}break;
+    case "copy":case "copy2":copyText(plain(),b,"copied","copy");break;
+    case "meta":copyText(metaPrompt(),b,"metaDone","meta");break;
+    case "see":$("#out").scrollIntoView();break;
+    case "dl":{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([plain()],{type:"text/plain"}));a.download=(S.title.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"animation-prompt")+(S.mode==="shots"?"-per-shot":"")+".txt";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);break}
+  }
+});
+renderAll();
+</script>
+</body>
+</html>

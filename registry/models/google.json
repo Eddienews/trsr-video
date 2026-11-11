@@ -1,0 +1,23 @@
+[
+  {
+    "id": "google-gemini-omni-flash",
+    "label": "Gemini Omni 1.1 Flash",
+    "provider": "google",
+    "apiModelId": "gemini-omni-1.1-flash",
+    "duration": { "minS": 1, "maxS": 60 },
+    "durationControl": false,
+    "multiShot": true,
+    "audio": true,
+    "audioParam": null,
+    "inputs": { "referenceImages": null, "firstFrame": null, "lastFrame": null },
+    "maxPromptChars": null,
+    "sizesNominal": true,
+    "sizes": {
+      "720p": { "16:9": [1280, 720], "9:16": [720, 1280], "1:1": null }
+    },
+    "pricing": { "currency": "USD", "perSecond": { "720p": 0.1014 }, "source": "official", "asOf": "2026-11-10" },
+    "notes": "The API has no duration parameter: the model picks the length, guided by the prompt, so the estimate is for the duration you asked for and the real charge follows the clip that comes out. Price: US$ 17.50 per million video tokens at 5,792 tokens per second of 720p. Only 720p has a published rate. Audio is always generated. The docs say the model may cut between shots by default. This replaces Veo 3.1, which Google shut down in the Gemini API on 2026-10-22.",
+    "docsUrl": "https://ai.google.dev/gemini-api/docs/omni",
+    "verifiedAt": "2026-11-10"
+  }
+]

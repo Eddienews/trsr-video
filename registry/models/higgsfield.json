@@ -1,0 +1,54 @@
+[
+  {
+    "id": "higgsfield-seedance-2.5",
+    "label": "Seedance 2.5",
+    "provider": "higgsfield",
+    "apiModelId": "bytedance/seedance-2.5/text-to-video",
+    "duration": { "minS": 4, "maxS": 30 },
+    "multiShot": true,
+    "audio": true,
+    "audioParam": "generate_audio",
+    "inputs": { "referenceImages": null, "firstFrame": null, "lastFrame": null },
+    "maxPromptChars": null,
+    "sizesNominal": true,
+    "sizes": {
+      "480p": { "16:9": [854, 480], "9:16": null, "1:1": null },
+      "720p": { "16:9": [1280, 720], "9:16": null, "1:1": null },
+      "1080p": { "16:9": [1920, 1080], "9:16": null, "1:1": null }
+    },
+    "pricing": {
+      "currency": "USD",
+      "perSecond": { "480p": 0.2056, "720p": 0.4622, "1080p": 1.1372 },
+      "source": "official",
+      "asOf": "2026-11-10"
+    },
+    "notes": "Prices are the page's 'about' figures for 16:9 without video input, before any account discount. Only 16:9 appears on the model page; other ratios were not checked. multiShot is a property of the model seen in NorthWindLab tests on Runware.",
+    "docsUrl": "https://open.higgsfield.ai/models/bytedance/seedance-2.5/text-to-video/playground",
+    "verifiedAt": "2026-11-10"
+  },
+  {
+    "id": "higgsfield-kling-4.0-flash",
+    "label": "Kling 4.0 Flash",
+    "provider": "higgsfield",
+    "apiModelId": "kling-video/v4.0-flash/text-to-video",
+    "duration": { "minS": 3, "maxS": 20 },
+    "multiShot": true,
+    "audio": true,
+    "audioParam": null,
+    "inputs": { "referenceImages": null, "firstFrame": null, "lastFrame": null },
+    "maxPromptChars": null,
+    "sizesNominal": true,
+    "sizes": {
+      "720p": { "16:9": [1280, 720], "9:16": [720, 1280], "1:1": [720, 720] }
+    },
+    "pricing": {
+      "currency": "USD",
+      "perSecond": { "720p": 0.094 },
+      "source": "official",
+      "asOf": "2026-11-10"
+    },
+    "notes": "Higgsfield takes resolution + aspect ratio; the pixel sizes here are nominal. multiShot and audio come from NorthWindLab tests of the same model on Runware.",
+    "docsUrl": "https://open.higgsfield.ai/models/kling-video/v4.0-flash/text-to-video/playground",
+    "verifiedAt": "2026-11-10"
+  }
+]
