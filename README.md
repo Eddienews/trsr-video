@@ -1,101 +1,107 @@
 # TRSR Video
 
-Estúdio de vídeo com IA da NorthWindLab Studio. Você monta o filme (história, personagens, cenário, tomadas, visual), escolhe a plataforma e o modelo, vê o custo, confirma e recebe o vídeo. Também dá para só copiar o prompt e gerar em outro lugar. Licença MIT.
+**English** | [Português](README.pt-BR.md)
 
-*AI video studio by NorthWindLab Studio. Build the film (story, characters, location, shots, look), pick the platform and the model, see the cost, confirm, get the video. You can also just copy the prompt. MIT license. A full English README is still to come.*
+AI video studio by NorthWindLab Studio. You build the film (story, characters, location, shots, look), pick the platform and the model, see the cost, confirm, and get the video. You can also just copy the prompt and generate somewhere else. MIT license.
 
-## Estado atual
+## Current state
 
-Funciona: o montador de prompt (completo, compacto e por tomada), o servidor local com as chaves no `.env`, o registro de modelos, nove plataformas, estimativa de custo, janela de confirmação, fila de um pedido por vez, download do MP4, lista de gerações com monitor e teste de chave.
+Working: the prompt builder (full, compact and per shot), the local server with keys in `.env`, the model registry, nine platforms, cost estimate, confirmation window, a queue that runs one request at a time, MP4 download, the list of generations with a monitor, and a key test.
 
-Ainda não foi feito: biblioteca com filtros e comparação lado a lado, agente que preenche o formulário a partir de um pedido livre, imagens de referência, Leonardo.
+Not done yet: a library with filters and side-by-side comparison, an agent that fills the form from a free-text request, reference images, Leonardo.
 
-Os adaptadores foram escritos a partir da documentação de cada plataforma e são cobertos por testes com respostas simuladas. Só o teste de chave (Runware, Higgsfield e Krea) rodou contra as APIs reais até agora; a primeira geração em cada plataforma é o teste de verdade.
+The adapters were written from each platform's documentation and are covered by tests with simulated answers. Only the key test (Runware, Higgsfield and Krea) has run against the real APIs so far; the first generation on each platform is the real test.
 
-## Usar
+The interface is available in Portuguese and English (PT / EN switch in the top bar). The prompt sent to the model is always in English.
 
-Requer Node 20 ou mais novo.
+## Run it
+
+Requires Node 20 or newer.
 
 ```
 npm install
-npm start            # monta a interface e abre o servidor em http://127.0.0.1:4477
+npm start            # builds the interface and starts the server at http://127.0.0.1:4477
 ```
 
-No Windows, `start.bat` faz as duas coisas.
+On Windows, `start.bat` does both.
 
-As chaves são salvas na tela **Configurações**, que grava o arquivo `.env`, ou direto no `.env` a partir do `.env.example`. A chave fica só no servidor: o navegador recebe apenas os 4 últimos caracteres, e ela não entra em logs nem no histórico. **Testar chave** faz uma consulta de leitura ao provedor, sem gerar nada.
+Keys are saved on the **Settings** screen, which writes the `.env` file, or directly in `.env` starting from `.env.example`. A key stays on the server: the browser only receives its last 4 characters, and it never goes into logs or the history. **Test key** makes one read-only call to the provider and generates nothing.
 
-O servidor escuta só em `127.0.0.1`. Publicar num servidor exige um login na frente: quem alcança a porta gasta o crédito.
+The server listens on `127.0.0.1` only. Publishing it on a server needs a login in front of it first: anyone who reaches the port can spend the credit.
 
-Para desenvolver a interface: `npm run server` num terminal e `npm run dev` em outro (http://localhost:5173).
+To work on the interface: `npm run server` in one terminal and `npm run dev` in another (http://localhost:5173).
 
-## O que acontece ao gerar
+## What happens when you generate
 
-1. Abaixo do monitor você escolhe **Plataforma**, **Modelo** e **Resolução**; o custo estimado aparece ao lado.
-2. Se a soma das tomadas não bate com a duração, ou a duração não cabe no modelo, um botão ajusta as tomadas mantendo a quantidade e as proporções.
-3. **Gerar vídeo** abre a janela com modelo, tamanho, duração, áudio, custo estimado (com a data do preço) e o texto exato do prompt.
-4. Só o **OK, gerar** envia. O servidor recusa pedidos sem a confirmação ou com um valor diferente do que foi mostrado.
-5. Os pedidos rodam um de cada vez. Chave recusada ou falta de saldo param a fila, sem tentar de novo.
-6. O MP4 é baixado para `data/videos` e aparece no monitor. Quando o provedor informa o custo real, ele fica ao lado do estimado.
+1. Below the monitor you choose **Platform**, **Model** and **Resolution**; the estimated cost shows next to them.
+2. If the shots do not add up to the duration, or the duration does not fit the model, one button fits the shots, keeping how many there are and their proportions.
+3. **Generate video** opens the window with model, size, duration, audio, estimated cost (with the date of the price) and the exact prompt text.
+4. Only **OK, generate** sends anything. The server refuses requests without the confirmation or with an amount different from the one shown.
+5. Requests run one at a time. A refused key or a lack of balance stops the queue; nothing is retried in a loop.
+6. The MP4 is downloaded to `data/videos` and shows on the monitor. When the provider reports the real cost, it is shown next to the estimate.
 
-## Plataformas
+## Platforms
 
-| Plataforma | Modelos no registro | Cancela | Informa custo real |
+| Platform | Models in the registry | Cancel | Reports real cost |
 |---|---|---|---|
-| Runware | Seedance 2.0 Mini, Seedance 2.5, Kling 4.0 Flash | não | sim |
-| Higgsfield | Seedance 2.5, Kling 4.0 Flash | só na fila | não |
-| Runway | Gen-4.5, Seedance 2.5 | sim | não |
-| Pika | Pika 2.5 | não | sim |
-| xAI | Grok Imagine Video 1.5, 1.5 Lite e clássico | não | não |
-| LTX | LTX-2.3 e LTX-2.5, Fast e Pro | não | não |
-| Kling | Kling 4.0 Flash, Kling 4.0 | não | não |
-| Google | Gemini Omni 1.1 Flash (o modelo decide a duração) | não | não |
-| Krea | Veo 3.1; Seedance listado, sem preço conferido | sim | não |
+| Runware | Seedance 2.0 Mini, Seedance 2.5, Kling 4.0 Flash | no | yes |
+| Higgsfield | Seedance 2.5, Kling 4.0 Flash | only while queued | no |
+| Runway | Gen-4.5, Seedance 2.5 | yes | no |
+| Pika | Pika 2.5 | no | yes |
+| xAI | Grok Imagine Video 1.5, 1.5 Lite and classic | no | no |
+| LTX | LTX-2.3 and LTX-2.5, Fast and Pro | no | no |
+| Kling | Kling 4.0 Flash, Kling 4.0 | no | no |
+| Google | Gemini Omni 1.1 Flash (the model picks the duration) | no | no |
+| Krea | Veo 3.1; Seedance listed, price not verified | yes | no |
 
-## Modelos e preços
+## Models and prices
 
-`registry/models/*.json` tem uma entrada por modelo: duração, tamanhos por resolução e formato, preço por segundo, limite do prompt, se faz várias tomadas numa geração. `null` significa "não conferido na documentação": o app não oferece essa opção. `pricing.source` diz se o preço vem da tabela do provedor (`official`) ou de uma geração real (`measured`), e `asOf` é a data. Preços mudam: confira antes de confiar.
+`registry/models/*.json` has one entry per model: duration, sizes by resolution and format, price per second, prompt limit, whether it cuts between shots in one generation. `null` means "not checked against the documentation": the app does not offer that option. `pricing.source` says whether the price comes from the provider's table (`official`) or from a real generation (`measured`), and `asOf` is the date. Prices change: check before you rely on them.
 
-Para adicionar um modelo de uma plataforma que já existe, basta uma entrada nova. Para uma plataforma nova: uma entrada em `registry/providers.json`, um arquivo em `packages/server/src/providers/` com `submit`, `poll` e, se o provedor permitir, `cancel`, uma linha em `providers/check.ts` para o teste de chave e o registro do adaptador em `main.ts`.
+To add a model on a platform that already exists, add one entry. For a new platform: one entry in `registry/providers.json`, one file in `packages/server/src/providers/` with `submit`, `poll` and, if the provider allows it, `cancel`, one line in `providers/check.ts` for the key test, and the adapter registered in `main.ts`.
 
-## Os três prompts
+## The three prompts
 
-- **Completo:** 19 seções, de SCENE CONTEXT a FINAL POSITIVE LOCKS. Vai para modelos que fazem cortes numa geração e têm espaço para ele.
-- **Compacto:** o mesmo filme em cerca de metade do texto. Vai sozinho para modelos com limite curto de prompt ou de clipe único; neles as tomadas viram uma ação contínua.
-- **Por tomada + keyframes:** referências de personagem, cenários vazios, quadro inicial e final e um prompt curto por tomada, para fluxos locais de primeiro e último quadro. É só para copiar.
+- **Full:** 19 sections, from SCENE CONTEXT to FINAL POSITIVE LOCKS. Sent to models that cut between shots in one generation and have room for it.
+- **Compact:** the same film in about half the text. Sent automatically to models with a short prompt limit or that make a single clip; for those, the shots become one continuous action.
+- **Per shot + keyframes:** character references, empty sets, a start and an end frame, and a short prompt per shot, for local first-and-last-frame workflows. Copy only.
 
-## Testar
+## Tests
 
 ```
-npm test             # testes de unidade; os de provedor usam respostas simuladas e não gastam crédito
+npm test             # unit tests; provider tests use simulated answers and spend no credit
 npm run typecheck
 ```
 
-`packages/core/test/golden` guarda o que a página original v2.2 produzia para cada estado de exemplo. O prompt completo e o por tomada precisam continuar idênticos a esses arquivos; uma mudança no texto tem de ser intencional.
+`packages/core/test/golden` holds what the original v2.2 page produced for each sample state. The full and the per-shot prompts must stay identical to those files; a change to the text has to be intentional.
 
-## Pastas
+## Folders
 
 ```
 packages/core/src/
-  presets.ts            tons, som e fala, estilos, luzes
-  state.ts              formato do estado, blank(), example()
-  prompt/single.ts      prompt completo
-  prompt/compact.ts     prompt compacto e a escolha automática
-  prompt/perShot.ts     por tomada + keyframes
-  checks.ts             as 12 travas
-  models.ts             tamanho, validação por modelo, reescala das tomadas, custo
+  presets.ts            tones, sound and speech, styles, lights
+  state.ts              shape of the state, blank(), example()
+  prompt/single.ts      full prompt
+  prompt/compact.ts     compact prompt and the automatic choice
+  prompt/perShot.ts     per shot + keyframes
+  checks.ts             the 12 locks
+  models.ts             size, validation per model, shot rescaling, cost
 packages/server/src/
-  env.ts                leitura e gravação do .env
-  registry.ts           carrega registry/
-  providers/            um arquivo por plataforma, check.ts (teste de chave), http.ts
-  jobs.ts               fila, acompanhamento, download, histórico em data/jobs.json
-  app.ts                rotas /api
+  env.ts                reads and writes .env
+  registry.ts           loads registry/
+  providers/            one file per platform, check.ts (key test), http.ts
+  jobs.ts               queue, polling, download, history in data/jobs.json
+  app.ts                /api routes
 packages/web/
-  index.html            a tela do estúdio
-  src/main.js           formulário, linha do tempo, prompt
-  src/generate.js       plataforma e modelo, gerar, configurações, gerações, monitor
-  src/ui.js             abas, tema, versão
-registry/               providers.json e models/*.json
-legacy/                 a página v2.2 original, referência dos goldens
-data/                   fora do git: jobs.json e videos/
+  index.html            the studio screen
+  src/main.js           form, timeline, prompt
+  src/generate.js       platform and model, generate, settings, generations, monitor
+  src/ui.js             tabs, theme, version
+registry/               providers.json and models/*.json
+legacy/                 the original v2.2 page, reference for the goldens
+data/                   not in git: jobs.json and videos/
 ```
+
+## Contributing
+
+Issues and pull requests are welcome. Run `npm test` and `npm run typecheck` before sending. For a new model or platform, link the documentation page each value came from in the registry entry (`docsUrl`), and leave `null` for anything you could not verify.
