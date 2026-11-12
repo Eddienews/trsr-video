@@ -25,7 +25,8 @@ describe("size from resolution + format",()=>{
     expect(pickSize(M("kling-4.0-flash"),"720p","16:9 horizontal")).toEqual([1280,720]);
   });
   it("does not offer what was never checked",()=>{
-    expect(pickSize(M("kling-4.0-flash"),"720p","9:16 vertical")).toBeNull();
+    // a size the registry marks as not checked (null)
+    expect(pickSize({...M("kling-4.0-flash"),sizes:{"720p":{"16:9":[1280,720] as [number,number],"9:16":null}}},"720p","9:16 vertical")).toBeNull();
     expect(pickSize(M("kling-4.0-flash"),"480p","16:9")).toBeNull();
     expect(resolutionsFor(M("kling-4.0-flash"),"16:9")).toEqual(["720p"]);
     expect(resolutionsFor(M("seedance-2.5"),"1:1 square")).toEqual(["480p","720p","1080p"]);
@@ -56,7 +57,7 @@ describe("validation per model",()=>{
   });
   it("flags sizes, shot sums and short durations",()=>{
     const S={...example(),aspect:"9:16 vertical"};
-    expect(validateForModel(S,M("kling-4.0-flash"),"720p").map(i=>i.code)).toContain("sizeUnavailable");
+    expect(validateForModel(S,{...M("kling-4.0-flash"),sizes:{"720p":{"16:9":[1280,720] as [number,number],"9:16":null}}},"720p").map(i=>i.code)).toContain("sizeUnavailable");
     const T={...blank(),dur:2};
     const codes=validateForModel(T,M("seedance-2.5"),"480p").map(i=>i.code);
     expect(codes).toContain("durationTooShort");expect(codes).toContain("shotsDontAddUp");

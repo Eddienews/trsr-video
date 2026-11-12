@@ -50,6 +50,8 @@ export function runwareAdapter(endpoint:string,fetchImpl:FetchLike=fetch as unkn
       if(req.seed!==undefined)task.seed=req.seed;
       // The audio switch is only sent where the model's docs name the parameter (registry: audioParam).
       if(req.model.audioParam==="settings.audio")task.settings={audio:req.audio};
+      // Docs (model page, "inputs.referenceImages"): 1 to N images as UUID, URL or data URI; not together with frameImages.
+      if(req.referenceImages?.length)task.inputs={referenceImages:req.referenceImages};
       const r=await call([task],apiKey);
       if(r.errors?.length)throw toError(200,r.errors[0],null);
       return {taskId:r.data?.[0]?.taskUUID||taskUUID};

@@ -26,7 +26,7 @@ Configurações: idioma e uma chave por plataforma. As chaves ficam no `.env` lo
 
 Funciona: o montador de prompt (completo, compacto e por tomada), o servidor local com as chaves no `.env`, o registro de modelos, nove plataformas, estimativa de custo, janela de confirmação, fila de um pedido por vez, download do MP4, lista de gerações com monitor, teste de chave, e imagens e música feitas neste computador pelo ComfyUI.
 
-Ainda não foi feito: biblioteca com filtros e comparação lado a lado, agente que preenche o formulário a partir de um pedido livre, imagens de referência, Leonardo.
+Ainda não foi feito: biblioteca com filtros e comparação lado a lado, agente que preenche o formulário a partir de um pedido livre, Leonardo.
 
 Os adaptadores foram escritos a partir da documentação de cada plataforma e são cobertos por testes com respostas simuladas. Contra as APIs reais até agora: o teste de chave (Runware, Higgsfield e Krea) e uma geração na Runware (Seedance 2.0 Mini). Nas outras plataformas, a primeira geração é o teste de verdade.
 
@@ -85,6 +85,19 @@ O TRSR Video pergunta ao ComfyUI quais arquivos de modelo ele tem e só oferece 
 Os grafos são os dos modelos de fluxo do próprio ComfyUI para cada modelo. O ComfyUI é esperado em `http://127.0.0.1:8188`; ponha `COMFYUI_URL` no `.env` se ele roda em outro endereço. As imagens ficam em `data/images`. Uma imagem é feita por vez e nada é reenviado sozinho. Tomada com 3 ou mais personagens ainda não é gerada. A licença de cada modelo vale para o que ele gera.
 
 As imagens ainda não são enviadas às plataformas de vídeo: hoje servem para conferir o visual e para fluxos de primeiro/último quadro fora do app.
+
+## Filmes maiores que uma geração
+
+Um modelo faz um número limitado de segundos por vez (15 em alguns, 20 ou 30 em outros). Quando o filme é maior que isso, o TRSR Video divide em partes, sempre entre duas tomadas, e envia uma geração por parte.
+
+- **Os mesmos personagens em todas as partes.** Escolha as imagens de referência do filme (personagens e cenários da aba Mídia) e elas vão junto com cada parte, nos modelos que aceitam imagens de referência.
+- **Uma confirmação só.** A janela mostra cada parte, o prompt e o total antes de enviar qualquer coisa.
+- **Se uma parte falhar,** as partes que ainda esperavam são canceladas e nada mais é cobrado. Gerar de novo retoma o filme: as partes prontas são mantidas.
+- **Juntado no final.** Com o FFmpeg no computador, as partes viram um MP4 só.
+
+## Imagens na nuvem
+
+Sem ComfyUI? A lista de modelos em Mídia > Imagens também oferece modelos na nuvem (`registry/images.json`), feitos com a chave da plataforma que você já salvou. Hoje: Z-Image Turbo na Runware, para referências de personagem e cenários vazios. Imagem na nuvem custa dinheiro, então o app mostra quantas imagens e cerca de quanto, e espera o seu OK; o custo real aparece em cada imagem. O primeiro e o último quadro de uma tomada ainda precisam de um modelo de edição neste computador.
 
 ## Música
 

@@ -51,8 +51,10 @@ export function perShot(S:State):Block[]{
     cDesc(c)+".",c.pers.trim()?"Expression that shows: "+c.pers.trim()+".":null,
     ...clean(S.style).slice(0,2),"Soft even studio light. No text."]));
   // Without the style, the model picks its own look (and its own habits, like a lone figure in an empty corridor).
-  const envStyle=clean(S.style).filter(x=>!/character|face|silhouette|puppet/i.test(x));
-  const plateLines=(desc:(string|null)[])=>["Background painting of an empty set for an animated film. 16:9 film frame.",...desc,...envStyle,...STILL(S.lighting),...clean(S.surface).slice(0,1),
+  // A plate is an empty set: a line about living things (animals, eyes, fur) makes the image model draw one.
+  const ALIVE=/animal|creature|\beyes?\b|\bfur\b|anatomy/i,noLife=(l:string[])=>l.filter(x=>!ALIVE.test(x));
+  const envStyle=noLife(clean(S.style).filter(x=>!/character|face|silhouette|puppet/i.test(x)));
+  const plateLines=(desc:(string|null)[])=>["Background painting of an empty set for an animated film. 16:9 film frame.",...desc,...envStyle,...noLife(STILL(S.lighting)),...noLife(clean(S.surface)).slice(0,1),
     ...clean(S.continuity).filter(x=>!/never change|wardrobe|design/i.test(x)&&!named(S).some(([c])=>mentions(x,c))),
     "An empty set: only architecture, objects and light.",
     S.textLock.trim()?stop(S.textLock.trim())+" No other readable text.":"No readable text, no logos."];

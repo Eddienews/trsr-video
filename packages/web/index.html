@@ -221,6 +221,16 @@ button.ithumb:hover,button.ithumb:focus-visible{outline:2px solid var(--accent);
 .ithumb.empty{border:1px dashed var(--line)}
 .ithumb .spin{position:absolute;inset:0;margin:auto;width:18px;height:18px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--accent);animation:ispin 1s linear infinite}
 @keyframes ispin{to{transform:rotate(360deg)}}
+.frefs{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin:8px 0 4px}
+.fref{display:flex;flex-direction:column;gap:4px;padding:6px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface-2);font-size:11px;cursor:pointer;position:relative;margin:0}
+.fref img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:var(--r-sm);display:block}
+.fref input{position:absolute;top:10px;left:10px;width:16px;height:16px;accent-color:var(--accent)}
+.fref span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#filmBody .quote tr.cost td{font-size:2rem}
+#filmBody .bad{color:var(--danger);font-family:var(--font-ui)}
+#filmBody details pre{max-height:240px;overflow:auto;white-space:pre-wrap;font-size:11px;margin:8px 0 0}
+#filmBody details{margin:0 0 6px;padding:8px 12px}
+#filmBody summary{cursor:pointer;font-size:12px;color:var(--text-2)}
 .mfield{display:flex;flex-direction:column;gap:4px;margin:0 0 6px}
 .mfield textarea{width:100%;resize:vertical;font-family:var(--font-mono);font-size:12px}
 .mfield input[type=range]{width:100%;accent-color:var(--accent)}
@@ -491,6 +501,7 @@ summary{cursor:pointer;font-weight:500;color:var(--text-2)}
 
 <dialog id="genDlg"><div class="dlg" id="genBody"></div></dialog>
 <dialog id="setDlg"><div class="dlg" id="setBody"></div></dialog>
+<dialog id="filmDlg"><div class="dlg" id="filmBody"></div></dialog>
 
 <nav class="bar">
   <button type="button" class="btn" id="see" data-t="see"></button>

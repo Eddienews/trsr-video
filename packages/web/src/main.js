@@ -6,7 +6,9 @@ import {initImages} from "./images.js";
 import {I} from "./i18n-images.js";
 import {initMusic} from "./music.js";
 import {M} from "./i18n-music.js";
-Object.assign(T.pt,G.pt,I.pt,M.pt);Object.assign(T.en,G.en,I.en,M.en);
+import {initFilm} from "./film.js";
+import {F} from "./i18n-film.js";
+Object.assign(T.pt,G.pt,I.pt,M.pt,F.pt);Object.assign(T.en,G.en,I.en,M.en,F.en);
 let gen=null;
 import {initUi} from "./ui.js";
 initUi();
@@ -159,3 +161,5 @@ gen=initGenerate({
 // Images made on this computer (ComfyUI): the tab only appears when the local server answers.
 gen.images=initImages({get:()=>S,t,esc,save,showStill:gen.showStill});
 gen.music=initMusic({get:()=>S,t,esc,save});
+// A film longer than one generation of the chosen model is generated in parts.
+gen.film=initFilm({get:()=>S,t,esc,save,onSent:()=>{gen.poll();if(window.trsrShow)window.trsrShow(document.querySelector("#lib"))}});

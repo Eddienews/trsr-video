@@ -1,6 +1,8 @@
 import type {ModelEntry,Size} from "@trsr-video/core";
 
-export interface SubmitRequest{model:ModelEntry;prompt:string;size:Size;resolution:string;aspect:string;durationS:number;audio:boolean;seed?:number}
+export interface SubmitRequest{model:ModelEntry;prompt:string;size:Size;resolution:string;aspect:string;durationS:number;audio:boolean;seed?:number;
+  /** Reference images as data URIs, in the order the prompt names them (IMAGE 1, IMAGE 2...). Only sent to models whose registry entry accepts them. */
+  referenceImages?:string[]}
 export type PollResult=
   |{status:"processing";progress?:number}
   |{status:"success";videoUrl:string;costUSD?:number;seed?:number}

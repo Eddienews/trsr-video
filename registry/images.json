@@ -1,0 +1,19 @@
+[
+  {
+    "id": "runware-z-image-turbo",
+    "label": "Z-Image Turbo",
+    "provider": "runware",
+    "apiModelId": "runware:z-image@turbo",
+    "kind": "text",
+    "steps": 8,
+    "pricing": {
+      "currency": "USD",
+      "estimatePerImage": 0.0032,
+      "source": "official",
+      "asOf": "2026-11-11"
+    },
+    "notes": "Billed by compute time, so the price of one image varies. The estimate is the highest price the docs list for a 1024 x 1024 image; their examples at 1344 x 768 cost less. The real cost of each image is recorded after it is made.",
+    "docsUrl": "https://runware.ai/docs/models/alibaba-z-image-turbo",
+    "verifiedAt": "2026-11-11"
+  }
+]

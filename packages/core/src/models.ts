@@ -8,7 +8,8 @@ export interface ModelEntry{
   id:string;label:string;provider:string;apiModelId:string;
   duration:{minS:number;maxS:number;allowedS?:number[]};
   multiShot:boolean;audio:boolean;audioParam:string|null;
-  inputs:{referenceImages:number|null;firstFrame:boolean|null;lastFrame:boolean|null};
+  /** refToken: how the prompt must name a reference image, when the provider says ("{n}" = its number); without it, "IMAGE n". */
+  inputs:{referenceImages:number|null;firstFrame:boolean|null;lastFrame:boolean|null;refToken?:string};
   maxPromptChars:number|null;
   /** resolution → aspect → [width,height]; null = not checked against the provider docs, never offered. */
   sizes:Record<string,Record<string,Size|null>>;

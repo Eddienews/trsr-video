@@ -24,9 +24,9 @@ Settings: language (Portuguese or English) and one key per platform. Keys stay i
 
 ## Current state
 
-Working: the prompt builder (full, compact and per shot), the local server with keys in `.env`, the model registry, nine platforms, cost estimate, confirmation window, a queue that runs one request at a time, MP4 download, the list of generations with a monitor, a key test, and images and music made on this computer through ComfyUI.
+Working: the prompt builder (full, compact and per shot), the local server with keys in `.env`, the model registry, nine platforms, cost estimate, confirmation window, a queue that runs one request at a time, MP4 download, the list of generations with a monitor, a key test, images and music made on this computer through ComfyUI, reference images made in the cloud, and films in parts with the same characters.
 
-Not done yet: a library with filters and side-by-side comparison, an agent that fills the form from a free-text request, reference images, Leonardo.
+Not done yet: a library with filters and side-by-side comparison, an agent that fills the form from a free-text request, Leonardo.
 
 The adapters were written from each platform's documentation and are covered by tests with simulated answers. Against the real APIs so far: the key test (Runware, Higgsfield and Krea) and one generation on Runware (Seedance 2.0 Mini). On the other platforms, the first generation is the real test.
 
@@ -87,6 +87,19 @@ TRSR Video asks ComfyUI which model files it has and offers only the models that
 The graphs are the ones of ComfyUI's own workflow templates for each model. ComfyUI is expected at `http://127.0.0.1:8188`; set `COMFYUI_URL` in `.env` if it runs somewhere else. Images are kept in `data/images`. One image is made at a time and nothing is sent again on its own. A shot with 3 or more characters is not generated yet. Each model's own license applies to what it makes.
 
 The images are not sent to the video platforms yet: today they are for checking the look, and for first/last-frame workflows outside the app.
+
+## Films longer than one generation
+
+A model makes a limited number of seconds at a time (15 on some, 20 or 30 on others). When the film is longer than that, TRSR Video splits it into parts, always between two shots, and sends one generation per part.
+
+- **Same characters in every part.** Pick the reference images of the film (characters and sets from the Media tab) and they go with every part, on the models that accept reference images.
+- **One confirmation.** The window shows every part, its prompt and the total, before anything is sent.
+- **If a part fails,** the parts still waiting are canceled and nothing else is charged. Generating again resumes the film: finished parts are kept.
+- **Joined at the end.** With FFmpeg on the computer, the parts become one MP4.
+
+## Images in the cloud
+
+No ComfyUI? The model list in Media > Images also offers cloud models (`registry/images.json`), made with the key of the platform you already saved. Today: Z-Image Turbo on Runware, for character references and empty sets. A cloud image costs money, so the app shows how many images and about how much, and waits for your OK; the real cost appears on each image. First and last frames of a shot still need an editing model on this computer.
 
 ## Music
 

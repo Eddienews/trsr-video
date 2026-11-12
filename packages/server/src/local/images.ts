@@ -10,8 +10,12 @@ export interface LocalImage{
   createdAt:string;startedAt?:string;finishedAt?:string;
   /** Music only: its length. */
   seconds?:number;
+  /** Cloud models only: what the provider charged for this image. */
+  costUSD?:number;
 }
-export type NewImage=Pick<LocalImage,"project"|"taskId"|"kind"|"label"|"modelId"|"prompt"|"width"|"height"|"refs">&{seed?:number;seconds?:number};
+export type NewImage=Pick<LocalImage,"project"|"taskId"|"kind"|"label"|"modelId"|"prompt"|"width"|"height"|"refs">&{seed?:number;seconds?:number;modelLabel?:string};
+/** A cloud model makes the image instead of ComfyUI: same request, plus what it cost. */
+export type CloudMake=(r:{prompt:string;width:number;height:number;seed:number})=>Promise<{bytes:Buffer;ext:string;costUSD?:number}>;
 
 /* The local image queue: one image at a time (one GPU), kept in data/images.json, files in data/images/.
    Like the video queue, nothing is sent again on its own: what was waiting or running when the server
@@ -20,7 +24,7 @@ export class ImageStore{
   private items:LocalImage[]=[];
   private file:string;readonly dir:string;
   private busy=false;private aborts=new Map<string,{aborted:boolean}>();private comfyIds=new Map<string,string>();
-  constructor(private o:{dataDir:string;comfy:Comfy}){
+  constructor(private o:{dataDir:string;comfy:Comfy;cloud?:Record<string,CloudMake>}){
     this.file=path.join(o.dataDir,"images.json");this.dir=path.join(o.dataDir,"images");
     mkdirSync(this.dir,{recursive:true});
     if(existsSync(this.file))try{this.items=JSON.parse(readFileSync(this.file,"utf8"))}catch{this.items=[]}
@@ -35,7 +39,7 @@ export class ImageStore{
   latestDone(project:string,taskId:string){return this.list(project).find(i=>i.taskId===taskId&&i.status==="done"&&i.file&&existsSync(path.join(this.dir,i.file)))}
   add(n:NewImage):LocalImage{
     const seed=Number.isInteger(n.seed)?n.seed as number:Math.floor(Math.random()*2**31);
-    const item:LocalImage={...n,seed,id:randomUUID(),modelLabel:localLabel(n.modelId),status:"queued",createdAt:new Date().toISOString()};
+    const item:LocalImage={...n,seed,id:randomUUID(),modelLabel:n.modelLabel||localLabel(n.modelId),status:"queued",createdAt:new Date().toISOString()};
     this.items.push(item);this.save();queueMicrotask(()=>void this.pump());return item;
   }
   /** A file the person brought (their own music): kept as it is, already "done". */
@@ -64,10 +68,14 @@ export class ImageStore{
         const signal={aborted:false};this.aborts.set(i.id,signal);
         try{
           const refs=i.refs.map((rid,n)=>{const r=this.get(rid);if(!r?.file)throw new ComfyError("missing","A reference image is gone.");return {name:"ref-"+i.id+"-"+n+".png",bytes:readFileSync(path.join(this.dir,r.file))}});
-          const {bytes,ext}=await this.o.comfy.make({modelId:i.modelId,prompt:i.prompt,width:i.width,height:i.height,seed:i.seed,refs,seconds:i.seconds},{signal,onStart:cid=>this.comfyIds.set(i.id,cid)});
+          const cloud=this.o.cloud?.[i.modelId];
+          const {bytes,ext,costUSD}:{bytes:Buffer;ext:string;costUSD?:number}=cloud?await cloud({prompt:i.prompt,width:i.width,height:i.height,seed:i.seed})
+            :await this.o.comfy.make({modelId:i.modelId,prompt:i.prompt,width:i.width,height:i.height,seed:i.seed,refs,seconds:i.seconds},{signal,onStart:cid=>this.comfyIds.set(i.id,cid)});
+          if(typeof costUSD==="number")i.costUSD=costUSD;
+          if(signal.aborted)throw new ComfyError("canceled","Canceled.");
           i.file=i.id+"."+ext;writeFileSync(path.join(this.dir,i.file),bytes);i.status="done";
         }catch(e){
-          const kind=e instanceof ComfyError?e.kind:"failed";
+          const kind=typeof (e as any)?.kind==="string"?(e as any).kind as string:"failed";
           if(kind==="canceled")i.status="canceled";else{i.status="failed";i.error={kind,message:String((e as Error).message||e).slice(0,400)}}
         }
         i.finishedAt=new Date().toISOString();this.aborts.delete(i.id);this.comfyIds.delete(i.id);this.save();

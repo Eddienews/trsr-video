@@ -1,0 +1,32 @@
+// Interface text of the "film in parts" window.
+export const F={pt:{
+  fTitle:n=>"Filme em "+n+" partes",
+  fHint:(d,m,max)=>"O filme tem "+d+" s e o "+m+" gera até "+max+" s por vez. Ele será gerado em partes que quebram sempre entre duas tomadas, e as partes são unidas num MP4 no fim. Nada é enviado nem cobrado antes do OK.",
+  fRefs:"Imagens de referência enviadas em todas as partes",
+  fRefsHint:max=>"São elas que mantêm os personagens e o cenário iguais de uma parte para a outra. Este modelo aceita até "+max+".",
+  fRefsNone:"Nenhuma imagem de personagem ou cenário deste filme ainda. Gere em Mídia > Imagens para manter os personagens iguais entre as partes.",
+  fRefsNo:"Este modelo não aceita imagens de referência aqui. Os personagens serão descritos só pelo texto e podem mudar de uma parte para a outra.",
+  fDone:"já gerada, não é cobrada de novo",fPart:n=>"Parte "+n,fShots:n=>n+(n===1?" tomada":" tomadas"),fTotal:"Custo total estimado",
+  fNote:(m,r)=>m+", "+r+". Se uma parte falhar, as seguintes não são enviadas.",
+  fPrompt:(n,c)=>"Prompt da parte "+n+", "+c.toLocaleString("pt-BR")+" caracteres",
+  fWorking:"Calculando as partes...",
+  fOk:n=>"OK, gerar as "+n+" partes",
+  fErr:{failed:"Não foi possível planejar o filme.",cannotSplit:(max,min)=>"Não dá para dividir este filme: cada parte precisa ter de "+min+" a "+max+" s, e as partes só quebram entre tomadas. Encurte a tomada mais longa ou ajuste os tempos.",
+    refsUnsupported:"Este modelo não aceita imagens de referência.",tooManyRefs:"Referências demais para este modelo.",refNotFound:"Uma imagem de referência não foi encontrada.",noKey:"Falta a chave desta plataforma em Configurações.",
+    estimateChanged:"O custo mudou. Confira o novo total antes de confirmar.",overLimit:"O total passa do seu limite de gasto.",invalid:"Uma das partes não pode ser gerada como está.",notConfirmed:"Falta confirmar."}
+},en:{
+  fTitle:n=>"Film in "+n+" parts",
+  fHint:(d,m,max)=>"The film is "+d+" s long and "+m+" makes up to "+max+" s at a time. It will be generated in parts that always break between two shots, and the parts are joined into one MP4 at the end. Nothing is sent or charged before you click OK.",
+  fRefs:"Reference images sent with every part",
+  fRefsHint:max=>"They are what keeps the characters and the set the same from one part to the next. This model takes up to "+max+".",
+  fRefsNone:"No character or set image of this film yet. Generate them in Media > Images to keep the characters the same across parts.",
+  fRefsNo:"This model does not take reference images here. The characters will be described by text only and may change from one part to the next.",
+  fDone:"already generated, not charged again",fPart:n=>"Part "+n,fShots:n=>n+(n===1?" shot":" shots"),fTotal:"Estimated total cost",
+  fNote:(m,r)=>m+", "+r+". If a part fails, the ones after it are not sent.",
+  fPrompt:(n,c)=>"Prompt of part "+n+", "+c.toLocaleString("en-US")+" characters",
+  fWorking:"Working out the parts...",
+  fOk:n=>"OK, generate the "+n+" parts",
+  fErr:{failed:"The film could not be planned.",cannotSplit:(max,min)=>"This film cannot be split: each part must be "+min+" to "+max+" s long, and parts only break between shots. Shorten the longest shot or adjust the timings.",
+    refsUnsupported:"This model does not take reference images.",tooManyRefs:"Too many references for this model.",refNotFound:"A reference image was not found.",noKey:"The key of this platform is missing in Settings.",
+    estimateChanged:"The cost changed. Check the new total before confirming.",overLimit:"The total is over your spending limit.",invalid:"One of the parts cannot be generated as it is.",notConfirmed:"Not confirmed."}
+}};

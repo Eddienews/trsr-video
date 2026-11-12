@@ -1,15 +1,18 @@
 import express from "express";
 import path from "node:path";
 import {existsSync} from "node:fs";
-import {musicPrompt,imageTasks,imageSize,plain,total,promptFor,type PromptMode,validateForModel,estimateCost,pickSize,fitToModel,resolutionsFor,type State,type ModelEntry} from "@trsr-video/core";
+import {splitParts,partState,musicPrompt,imageTasks,imageSize,plain,total,promptFor,type PromptMode,validateForModel,estimateCost,pickSize,fitToModel,resolutionsFor,type State,type ModelEntry} from "@trsr-video/core";
 import type {EnvFile} from "./env";
 import type {Registry} from "./registry";
 import type {JobQueue,Job} from "./jobs";
+import {randomUUID} from "node:crypto";
 import {type Comfy,localKind} from "./local/comfy";
 import type {ImageStore,LocalImage} from "./local/images";
 import type {Ffmpeg} from "./local/ffmpeg";
 
-export interface AppDeps{env:EnvFile;registry:Registry;queue:JobQueue;checkKey?:(provider:string,key:string)=>Promise<{result:"ok"|"invalid"|"unknown";message?:string;balanceUSD?:number}>;webDir?:string;videosDir:string;version:string;local?:{comfy:Comfy;images:ImageStore;ffmpeg:Ffmpeg}}
+export interface AppDeps{env:EnvFile;registry:Registry;queue:JobQueue;checkKey?:(provider:string,key:string)=>Promise<{result:"ok"|"invalid"|"unknown";message?:string;balanceUSD?:number}>;webDir?:string;videosDir:string;version:string;local?:{comfy:Comfy;images:ImageStore;ffmpeg:Ffmpeg;cloudImages?:CloudImageModel[]}}
+/** An image model that runs at a provider (registry/images.json), for people without ComfyUI. */
+export interface CloudImageModel{id:string;label:string;provider:string;apiModelId:string;kind:"text"|"edit";steps?:number;pricing:{estimatePerImage:number}}
 const LIMITS={perGeneration:"LIMIT_PER_GENERATION_USD",perDay:"LIMIT_PER_DAY_USD"} as const;
 
 export function createApp(d:AppDeps){
@@ -106,6 +109,52 @@ export function createApp(d:AppDeps){
     res.status(202).json(pub(job));
   });
 
+  /* ---------- a film longer than one generation: made in parts, the same references in every part ---------- */
+  function filmPlan(b:any):{status:number;body:any;m?:ModelEntry;S?:State;ids?:string[];quotes?:ReturnType<typeof quote>[];done?:boolean[]}{
+    const m=model(b.modelId),S=b.state;
+    if(!m||!isState(S))return {status:400,body:{error:"badRequest"}};
+    // partS: a shorter limit per part chosen by the person (one scene per part), never longer than the model allows.
+    const cap=typeof b.partS==="number"&&b.partS>=m.duration.minS?Math.min(m.duration.maxS,b.partS):m.duration.maxS;
+    const parts=splitParts(S,cap,m.duration.minS);
+    if(!parts)return {status:422,body:{error:"cannotSplit",maxS:cap,minS:m.duration.minS}};
+    const ids:string[]=Array.isArray(b.refs)?b.refs.filter((x:unknown)=>typeof x==="string"):[],max=m.inputs?.referenceImages||0;
+    const refs=ids.map(id=>d.local?.images.get(id));
+    if(refs.some(r=>!r||r.status!=="done"||!r.file||r.kind==="music"))return {status:404,body:{error:"refNotFound"}};
+    if(ids.length>max)return {status:422,body:{error:max?"tooManyRefs":"refsUnsupported",max}};
+    const labels=refs.map(r=>({kind:r!.kind==="plate"?"plate" as const:"reference" as const,label:r!.label}));
+    const quotes=parts.map((_p,k)=>quote(partState(S,parts,k,labels,m.inputs?.refToken),m,String(b.resolution||""),b.audio!==false,pmode(b.promptMode)));
+    // Resuming a film: the parts already generated are kept and not paid again; only the others are sent.
+    const resume=typeof b.resume==="string"?b.resume:null,prev=resume?d.queue.list().filter(j=>j.film?.id===resume&&(j.film?.part||0)>0):[];
+    if(resume&&(!prev.length||prev[0].film!.count!==parts.length||prev.some(j=>j.modelId!==m.id||j.resolution!==quotes[0].resolution)))return {status:409,body:{error:"resumeMismatch"}};
+    // redo:[3] makes part 3 again on a film that is resumed, even though it is done: the newest clip of a part is the one joined.
+    const redo:number[]=resume&&Array.isArray(b.redo)?b.redo.filter((x:unknown)=>Number.isInteger(x)):[];
+    const done=parts.map((_p,k)=>!redo.includes(k+1)&&prev.some(j=>j.film!.part===k+1&&j.status==="done"&&!!j.videoFile)),todo=quotes.filter((_q,k)=>!done[k]);
+    const known=todo.every(q=>q.estimate),totalUSD=known?Math.round(todo.reduce((a,q)=>a+q.estimate!.usd,0)*10000)/10000:null;
+    const lim=limits(),over:string[]=[];
+    if(totalUSD!==null&&lim.perGeneration!==null&&todo.some(q=>q.estimate!.usd>lim.perGeneration!))over.push("perGeneration");
+    if(totalUSD!==null&&lim.perDay!==null&&lim.spentToday+totalUSD>lim.perDay)over.push("perDay");
+    return {status:200,m,S,ids,quotes,done,body:{resume,model:quotes[0].model,resolution:quotes[0].resolution,size:quotes[0].size,refsMax:max,refs:refs.map(r=>({id:r!.id,label:r!.label,kind:r!.kind})),
+      parts:quotes.map((q,k)=>({done:done[k],part:k+1,startS:parts[k].startS,durationS:q.durationS,shots:q.shots,promptChars:q.promptChars,promptKind:q.promptKind,prompt:q.prompt,estimate:q.estimate,issues:q.issues})),
+      totalUSD,limits:{...lim,over}}};
+  }
+  app.post("/api/estimate-film",(req,res)=>{const p=filmPlan(req.body||{});res.status(p.status).json(p.body)});
+  // Same rule as one generation: nothing is sent without confirmed:true AND the total the person saw.
+  app.post("/api/generate-film",(req,res)=>{
+    const b=req.body||{},p=filmPlan(b);
+    if(p.status!==200||!p.m||!p.quotes)return void res.status(p.status).json(p.body);
+    const prov=d.registry.providers[p.m.provider];
+    if(!d.env.has(prov.envKey))return void res.status(409).json({error:"noKey",provider:p.m.provider});
+    if(p.quotes.some(q=>q.issues.some(i=>i.blocking)||!q.estimate||!q.size)||p.body.totalUSD===null)return void res.status(422).json({error:"invalid",plan:p.body});
+    if(b.confirmed!==true)return void res.status(400).json({error:"notConfirmed",plan:p.body});
+    if(typeof b.estimateUSD!=="number"||Math.abs(b.estimateUSD-(p.body.totalUSD as number))>0.00005)return void res.status(409).json({error:"estimateChanged",plan:p.body});
+    if((p.body.limits as any).over.length&&b.confirmOverLimit!==true)return void res.status(409).json({error:"overLimit",plan:p.body});
+    const id=p.body.resume||randomUUID(),n=p.quotes.length;
+    if(p.done!.every(Boolean))return void res.status(409).json({error:"nothingToDo"});
+    const jobs=p.quotes.map((q,k)=>p.done![k]?null:d.queue.add({title:(p.S!.title||"").trim()||"Untitled",modelId:p.m!.id,modelLabel:p.m!.label+" · "+prov.label+(n>1?" · part "+(k+1)+"/"+n:""),provider:p.m!.provider,resolution:q.resolution,size:q.size!,
+      durationS:q.durationS,audio:q.audio,prompt:q.prompt,promptKind:q.promptKind,state:p.S!,estimateUSD:q.estimate!.usd,priceAsOf:q.estimate!.asOf,film:n>1?{id,part:k+1,count:n}:undefined,refImages:p.ids!.length?p.ids:undefined})).filter((j):j is Job=>!!j);
+    res.status(202).json({filmId:id,jobs:jobs.map(pub)});
+  });
+
   app.get("/api/jobs",(_q,res)=>void res.json({jobs:d.queue.list().map(pub),paused:d.queue.paused,spentToday:d.queue.spentToday()}));
   app.get("/api/jobs/:id",(req,res)=>{const j=d.queue.get(req.params.id);j?res.json({...pub(j),state:j.state}):res.status(404).json({error:"notFound"})});
   app.post("/api/jobs/:id/cancel",async(req,res)=>{
@@ -118,10 +167,16 @@ export function createApp(d:AppDeps){
 
   /* ---------- images made on this computer (ComfyUI): free, so no cost window ---------- */
   if(d.local){
-    const {comfy,images,ffmpeg}=d.local;
+    const {comfy,images,ffmpeg}=d.local,cloud=d.local.cloudImages||[];
+    const cloudKey=(c:CloudImageModel)=>d.env.has(d.registry.providers[c.provider]?.envKey||"");
     const project=(S:State)=>(S.title||"").trim()||"Untitled";
     const pubI=(i:LocalImage)=>({...i,url:i.file?"/images/"+i.file:null});
-    app.get("/api/local/status",async(_q,res)=>void res.json({...await comfy.status(),ffmpeg:await ffmpeg.available()}));
+    // What can make images: the models ComfyUI has on this computer, and the cloud models whose key is saved.
+    app.get("/api/local/status",async(_q,res)=>{
+      const st=await comfy.status();
+      res.json({...st,ffmpeg:await ffmpeg.available(),models:[...st.models.map(m=>({...m,cloud:false})),
+        ...cloud.map(c=>({id:c.id,label:c.label,kind:c.kind,available:cloudKey(c),missing:[],files:[],note:"≈ $"+c.pricing.estimatePerImage,cloud:true,provider:c.provider,providerLabel:d.registry.providers[c.provider]?.label||c.provider,estimateUSD:c.pricing.estimatePerImage}))]});
+    });
     app.get("/api/local/images",(req,res)=>void res.json({images:images.list(typeof req.query.project==="string"?req.query.project:undefined).filter(i=>i.kind!=="music").map(pubI)}));
     // The prompt is built here from the film, the same text the "per shot + keyframes" prompt shows.
     app.post("/api/local/images",async(req,res)=>{
@@ -131,16 +186,23 @@ export function createApp(d:AppDeps){
       if(!task)return void res.status(404).json({error:"notFound"});
       if(task.unsupported)return void res.status(422).json({error:task.unsupported});
       if(!task.prompt.trim())return void res.status(422).json({error:"emptyPrompt"});
-      if(localKind(b.modelId)!==(task.kind==="keyframe"?"edit":"text"))return void res.status(422).json({error:"wrongModel"});
-      const st=await comfy.status();
-      if(!st.reachable)return void res.status(503).json({error:"unreachable",url:st.url});
-      const m=st.models.find(x=>x.id===b.modelId);
-      if(!m||!m.available)return void res.status(409).json({error:"modelMissing",missing:m?m.missing:[]});
+      const cm=cloud.find(c=>c.id===b.modelId);
+      if((cm?cm.kind:localKind(b.modelId))!==(task.kind==="keyframe"?"edit":"text"))return void res.status(422).json({error:"wrongModel"});
+      if(cm){
+        // A cloud image costs money: like a video, it is only sent with the person's OK.
+        if(!cloudKey(cm))return void res.status(409).json({error:"noKey",provider:cm.provider});
+        if(b.confirmed!==true)return void res.status(400).json({error:"notConfirmed",estimateUSD:cm.pricing.estimatePerImage});
+      }else{
+        const st=await comfy.status();
+        if(!st.reachable)return void res.status(503).json({error:"unreachable",url:st.url});
+        const m=st.models.find(x=>x.id===b.modelId);
+        if(!m||!m.available)return void res.status(409).json({error:"modelMissing",missing:m?m.missing:[]});
+      }
       const refs=task.needs.map(n=>images.latestDone(project(S),n)),lacking=task.needs.filter((_n,i)=>!refs[i]);
       if(lacking.length)return void res.status(409).json({error:"missingRefs",missing:lacking});
       const [width,height]=imageSize(S.aspect);
       const seed=Number.isInteger(b.seed)&&b.seed>=0?b.seed:undefined;
-      res.status(202).json(pubI(images.add({project:project(S),taskId:task.id,kind:task.kind,label:task.label,modelId:b.modelId,prompt:task.prompt,width,height,refs:refs.map(r=>r!.id),seed})));
+      res.status(202).json(pubI(images.add({project:project(S),taskId:task.id,kind:task.kind,label:task.label,modelId:b.modelId,modelLabel:cm?cm.label+" · "+(d.registry.providers[cm.provider]?.label||cm.provider):undefined,prompt:task.prompt,width,height,refs:refs.map(r=>r!.id),seed})));
     });
     app.post("/api/local/images/:id/cancel",async(req,res)=>{
       const r=await images.cancel(req.params.id);

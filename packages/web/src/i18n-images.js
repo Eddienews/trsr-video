@@ -1,11 +1,13 @@
 // Interface text of the Images tab (images made on this computer).
 export const I={pt:{
   imgTab:"Imagens",
-  imgHint:"Imagens feitas neste computador pelo ComfyUI, sem custo: a referência de cada personagem, cada cenário vazio e o primeiro e o último quadro de cada tomada.",
+  imgHint:"As imagens do filme: a referência de cada personagem, cada cenário vazio e o primeiro e o último quadro de cada tomada. Feitas neste computador pelo ComfyUI, sem custo, ou na nuvem, com a chave da plataforma.",
+  imgNoKey:"falta a chave em Configurações",imgCost:v=>"Custo real: $"+v.toFixed(4),
+  imgCloudAsk:(n,usd,m)=>n+(n===1?" imagem":" imagens")+" na nuvem ("+m+"): cerca de $"+usd.toFixed(2)+" no total. Nada é cobrado antes do OK.",imgCloudOk:"OK, gerar",
   imgChecking:"Procurando o ComfyUI...",
   imgOn:u=>"ComfyUI ligado em "+u,
   imgOff:u=>"ComfyUI não responde em "+u,
-  imgOffHelp:"Abra o ComfyUI e clique em Verificar. Se ele roda em outro endereço, ponha COMFYUI_URL no arquivo .env.",
+  imgOffHelp:"Sem o ComfyUI, escolha um modelo na nuvem abaixo. Para gerar neste computador, abra o ComfyUI e clique em Verificar (outro endereço: COMFYUI_URL no arquivo .env).",
   imgRetry:"Verificar",
   imgText:"Modelo: personagens e cenários",
   imgEdit:"Modelo: quadros das tomadas",
@@ -27,11 +29,13 @@ export const I={pt:{
     missing:"Faltam arquivos no ComfyUI.",interrupted:"O servidor parou antes de gerar esta imagem."}
 },en:{
   imgTab:"Images",
-  imgHint:"Images made on this computer by ComfyUI, at no cost: one reference per character, each empty set, and the first and last frame of each shot.",
+  imgHint:"The images of the film: one reference per character, each empty set, and the first and last frame of each shot. Made on this computer by ComfyUI, at no cost, or in the cloud, with the platform's key.",
+  imgNoKey:"key missing in Settings",imgCost:v=>"Real cost: $"+v.toFixed(4),
+  imgCloudAsk:(n,usd,m)=>n+(n===1?" image":" images")+" in the cloud ("+m+"): about $"+usd.toFixed(2)+" in all. Nothing is charged before you click OK.",imgCloudOk:"OK, generate",
   imgChecking:"Looking for ComfyUI...",
   imgOn:u=>"ComfyUI is running at "+u,
   imgOff:u=>"ComfyUI is not answering at "+u,
-  imgOffHelp:"Start ComfyUI and click Check. If it runs at another address, set COMFYUI_URL in the .env file.",
+  imgOffHelp:"Without ComfyUI, pick a cloud model below. To generate on this computer, start ComfyUI and click Check (another address: COMFYUI_URL in the .env file).",
   imgRetry:"Check",
   imgText:"Model: characters and sets",
   imgEdit:"Model: shot frames",

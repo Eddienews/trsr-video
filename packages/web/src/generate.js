@@ -331,5 +331,5 @@ export function initGenerate({get,apply,t,esc,save}){
     refresh();if(online)poll();
   }).catch(()=>{online=false;refresh()});
 
-  return {refresh,showStill(s){still=s;updateViewer();$("#stage").scrollIntoView({block:"nearest"})}};
+  return {refresh,poll,showStill(s){still=s;updateViewer();$("#stage").scrollIntoView({block:"nearest"})}};
 }

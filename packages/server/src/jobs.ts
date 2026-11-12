@@ -15,6 +15,10 @@ export interface Job{
   estimateUSD:number;priceAsOf:string;realUSD?:number;seed?:number;
   taskId?:string;progress?:number;waiting?:string;videoFile?:string;
   error?:{kind:string;message:string;code?:string;allowedValues?:unknown};
+  /** A film made in parts: the parts share an id; part 0 is the joined film. */
+  film?:{id:string;part:number;count:number};
+  /** Ids of local images sent as references with this generation. */
+  refImages?:string[];
 }
 export interface QueueDeps{
   dataDir:string;
@@ -29,6 +33,10 @@ export interface QueueDeps{
   timeoutMs?:number;
   retryWaitMs?:number;
   maxRetries?:number;
+  /** A local image as a data URI, to send as a reference. */
+  refImage?:(id:string)=>Promise<string>;
+  /** Joins the parts of a film into one MP4. */
+  join?:(files:string[],out:string)=>Promise<void>;
 }
 const TERMINAL:JobStatus[]=["done","failed","canceled"];
 
@@ -70,7 +78,7 @@ export class JobQueue{
   /** What was committed today: real cost when known, the estimate otherwise. Unsent and canceled jobs do not count. */
   spentToday():number{
     const day=this.stamp().slice(0,10);
-    return Math.round(this.jobs.filter(j=>j.createdAt.slice(0,10)===day&&j.status!=="canceled"&&(j.taskId||!TERMINAL.includes(j.status)))
+    return Math.round(this.jobs.filter(j=>j.createdAt.slice(0,10)===day&&j.status!=="canceled"&&j.film?.part!==0&&(j.taskId||!TERMINAL.includes(j.status)))
       .reduce((a,j)=>a+(j.realUSD??j.estimateUSD),0)*10000)/10000;
   }
   add(input:Omit<Job,"id"|"createdAt"|"status">):Job{
@@ -101,6 +109,31 @@ export class JobQueue{
     try{for(let j=this.next();j&&!this.paused;j=this.next())await this.process(j)}
     finally{this.running=false}
   }
+  /** A film in parts: when one part fails, the parts still waiting are not sent, so nothing more is charged. */
+  private dropRest(j:Job){
+    if(!j.film)return;
+    for(const x of this.jobs)if(x.film?.id===j.film.id&&x.status==="queued"){x.status="canceled";x.finishedAt=this.stamp();x.waiting=undefined}
+  }
+  /** When the last part is in, the parts are joined into one MP4, listed as a generation of its own. It is not a new charge. */
+  private async afterPart(j:Job){
+    if(!j.film||!this.d.join)return;
+    // One finished clip per part: after a film is resumed, a part may have an older failed attempt next to the good one.
+    const good=this.jobs.filter(x=>x.film?.id===j.film!.id&&x.film.part>0&&x.status==="done"&&x.videoFile);
+    const found=Array.from({length:j.film.count},(_v,k)=>good.filter(x=>x.film!.part===k+1).pop());
+    if(found.some(p=>!p))return;
+    // Already joined, and no part was made again since: nothing to do. A part made again joins the film again.
+    const joined=this.jobs.map((x,i)=>x.film?.id===j.film!.id&&x.film.part===0&&x.status==="done"?i:-1).reduce((a,i)=>Math.max(a,i),-1);
+    if(joined>=0&&found.every(p=>this.jobs.indexOf(p!)<joined))return;
+    const parts=found as Job[];
+    const file=j.film.id+"-film.mp4",known=parts.every(p=>typeof p.realUSD==="number");
+    const whole:Job={...j,id:randomUUID(),createdAt:this.stamp(),startedAt:undefined,finishedAt:this.stamp(),status:"done",film:{id:j.film.id,part:0,count:j.film.count},
+      durationS:parts.reduce((a,p)=>a+p.durationS,0),estimateUSD:Math.round(parts.reduce((a,p)=>a+p.estimateUSD,0)*10000)/10000,
+      realUSD:known?Math.round(parts.reduce((a,p)=>a+p.realUSD!,0)*10000)/10000:undefined,taskId:undefined,seed:undefined,progress:undefined,
+      prompt:parts.map(p=>p.prompt).join("\n\n"),modelLabel:j.modelLabel.replace(/ · [^·]*$/,"")+" · "+j.film.count+" parts joined",videoFile:file};
+    try{await this.d.join(parts.map(p=>path.join(this.videos,p.videoFile!)),path.join(this.videos,file))}
+    catch(e){whole.status="failed";whole.videoFile=undefined;whole.error={kind:"provider",message:"The parts are done, but joining them failed: "+String((e as Error).message||e).slice(0,200)}}
+    this.jobs.push(whole);this.save();
+  }
   private async process(j:Job){
     const adapter=this.d.adapters[j.provider],model=this.d.model(j.modelId);
     try{
@@ -108,10 +141,11 @@ export class JobQueue{
       const key=this.d.apiKey(j.provider);
       if(!j.taskId){
         const max=this.d.maxRetries??40;
+        const referenceImages=j.refImages?.length&&this.d.refImage?await Promise.all(j.refImages.map(r=>this.d.refImage!(r))):undefined;
         for(let attempt=0;;attempt++){
           if((j.status as JobStatus)==="canceled")return;
           j.status="submitting";j.startedAt??=this.stamp();this.save();
-          try{j.taskId=(await adapter.submit({model,prompt:j.prompt,size:j.size,resolution:j.resolution,aspect:aspectKey(j.state.aspect),durationS:j.durationS,audio:j.audio},key)).taskId;break}
+          try{j.taskId=(await adapter.submit({model,prompt:j.prompt,size:j.size,resolution:j.resolution,aspect:aspectKey(j.state.aspect),durationS:j.durationS,audio:j.audio,referenceImages},key)).taskId;break}
           catch(e){
             // The provider holds the credit of a request while it runs; with a low balance the next one is refused.
             // Wait and try again. Anything else is final.
@@ -139,7 +173,8 @@ export class JobQueue{
           j.realUSD=r.costUSD;j.seed=r.seed;j.status="downloading";j.progress=100;this.save();
           const file=j.id+".mp4";
           await this.download(r.videoUrl,path.join(this.videos,file));
-          j.videoFile=file;j.status="done";j.finishedAt=this.stamp();this.save();return;
+          j.videoFile=file;j.status="done";j.finishedAt=this.stamp();this.save();
+          await this.afterPart(j);return;
         }
         if(typeof r.progress==="number")j.progress=r.progress;
         if(this.now().getTime()>deadline)throw new ProviderError("provider","No result after "+Math.round((this.d.timeoutMs??30*60*1000)/60000)+" minutes. The request may still finish at the provider; check its dashboard.","timeout");
@@ -147,7 +182,7 @@ export class JobQueue{
       }
     }catch(e){
       if((j.status as JobStatus)==="canceled"){this.save();return}
-      this.fail(j,e);
+      this.fail(j,e);this.dropRest(j);
       // A bad key or an empty balance fails every request the same way: stop instead of retrying in a loop.
       if(e instanceof ProviderError&&(e.kind==="auth"||e.kind==="balance"))this.paused={reason:e.kind,provider:j.provider,message:e.message};
       this.save();
