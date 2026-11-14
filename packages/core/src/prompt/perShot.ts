@@ -19,6 +19,8 @@ export function framing(lens:string):string|null{
   if(/overhead/.test(l))f.push("camera high above looking down");
   return f.length?stop(f.join(", ")):null;
 }
+// Words too common to tell a character from the place.
+const PLAIN=new Set("with that this from into over under above below until when then they them their there have holds hold held takes take only every each same just like very much more most some none than also small tiny little large huge round short long tall wide soft dark light bright white black brown green blue grey gray gold golden cream pink yellow orange purple silver clothes shell body face eyes head arms hands paws legs feet size".split(" "));
 const STILL=(s:string)=>clean(s).filter(x=>!/haze|mist|fog|bloom|dust motes|glow and bloom/i.test(x));
 export function perShot(S:State):Block[]{
   const sp=spans(S),out:Block[]=[],loc=clean(S.location);
@@ -54,8 +56,22 @@ export function perShot(S:State):Block[]{
   // A plate is an empty set: a line about living things (animals, eyes, fur) makes the image model draw one.
   const ALIVE=/animal|creature|\beyes?\b|\bfur\b|anatomy/i,noLife=(l:string[])=>l.filter(x=>!ALIVE.test(x));
   const envStyle=noLife(clean(S.style).filter(x=>!/character|face|silhouette|puppet/i.test(x)));
-  const plateLines=(desc:(string|null)[])=>["Background painting of an empty set for an animated film. 16:9 film frame.",...desc,...envStyle,...noLife(STILL(S.lighting)),...noLife(clean(S.surface)).slice(0,1),
-    ...clean(S.continuity).filter(x=>!/never change|wardrobe|design/i.test(x)&&!named(S).some(([c])=>mentions(x,c))),
+  // An empty set shows the place before anything happens. A line that talks about a character (by name, or by what the
+  // character is, wears or holds: "ONE hedgehog, ONE leaf umbrella") or about a later moment ("at the very end") makes the
+  // image model draw it; so does, outdoors, a light source the place does not have ("lamps" in a storm on an open hill).
+  const wordsOf=(s:string)=>(s.toLowerCase().match(/[a-z]{4,}/g)||[]).filter(w=>!PLAIN.has(w));
+  const placeText=[...loc,...pl.map(p=>p.desc)].join(" ").toLowerCase();
+  const charWords=new Set(named(S).flatMap(([c])=>wordsOf([c.name,c.nick,c.look,c.ward,c.prop].join(" "))).filter(w=>!placeText.includes(w)));
+  const aboutChar=(x:string)=>wordsOf(x).some(w=>charWords.has(w));
+  // One line can hold a rule for a character and one for the place ("Raincoat stays YELLOW. Lighthouse stripes stay RED."): judged sentence by sentence.
+  const sentences=(x:string)=>x.split(/(?<=[.!?])\s+/);
+  const LATER=/\b(at the (very )?end|in the end|last shot|finally|later on)\b/i;
+  const SOURCE=/\b(lamps?|lanterns?|flames?|candles?|fires?|torch(es)?|neon|signs?|windows?|street ?lights?)\b/gi;
+  const outdoors=/\b(hill|field|meadow|countryside|forest|woods|desert|beach|mountain|valley|prairie|garden|park|open sky)\b/i.test(placeText);
+  const foreignLight=(x:string)=>{const m=x.match(SOURCE)||[];return outdoors&&m.length>0&&m.every(s=>!placeText.includes(s.toLowerCase().replace(/(es|s)$/,"")))};
+  const plateLight=noLife(STILL(S.lighting)).filter(x=>!LATER.test(x)&&!foreignLight(x)&&!aboutChar(x));
+  const plateLines=(desc:(string|null)[])=>["Background painting of an empty set for an animated film. 16:9 film frame.",...desc,...envStyle,...plateLight,...noLife(clean(S.surface)).slice(0,1),
+    ...clean(S.continuity).filter(x=>!/never change|wardrobe|design/i.test(x)&&!named(S).some(([c])=>mentions(x,c))).map(x=>sentences(x).filter(s=>!aboutChar(s)).join(" ")).filter(Boolean),
     "An empty set: only architecture, objects and light.",
     S.textLock.trim()?stop(S.textLock.trim())+" No other readable text.":"No readable text, no logos."];
   if(pl.length)pl.forEach((p,i)=>add("SET PLATE — "+plateName(i),plateLines([...clean(p.desc),loc.length?"It is part of this place: "+loc.join(" "):null])));
