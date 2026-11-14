@@ -5,7 +5,7 @@ export function initFilm({get,t,esc,save,onSent}){
   const $=s=>document.querySelector(s);
   const dlg=$("#filmDlg"),body=$("#filmBody");
   if(!dlg||!body)return {};
-  let models=[],prompts=[],plan=null,err="",imgs=[],busy=false,sending=false,overOk=false,seq=0,resume=null;
+  let models=[],prompts=[],plan=null,err="",imgs=[],loading=false,busy=false,sending=false,overOk=false,seq=0,resume=null;
   const api=async(method,url,body)=>{
     const r=await fetch(url,{method,headers:body===undefined?{}:{"content-type":"application/json"},body:body===undefined?undefined:JSON.stringify(body)});
     let json=null;try{json=await r.json()}catch(_){}
@@ -36,6 +36,8 @@ export function initFilm({get,t,esc,save,onSent}){
     render();
   }
   function render(){
+    // Until the models, prompts and images are in, nothing is shown that could be wrong ("no images", another prompt).
+    if(loading){body.innerHTML='<p class="note">'+esc(t("fLoading"))+'</p><div class="actions"><button type="button" class="btn" id="fCancel">'+esc(t("gCancel"))+'</button><button type="button" class="btn sun" id="fOk" disabled>'+esc(t("fOk1"))+"</button></div>";return}
     const S=get(),m=model(),picked=chosen(),max=maxRefs();
     const single=!!m&&(+S.dur||0)<=m.duration.maxS;
     let h="<h2>"+esc(single?t("fTitle1"):t("fTitle")(plan?plan.parts.length:"…"))+'</h2><p class="hint">'+esc(m?(single?t("fHint1")(m.label):t("fHint")(+S.dur||0,m.label,m.duration.maxS)):"")+"</p>";
@@ -64,7 +66,7 @@ export function initFilm({get,t,esc,save,onSent}){
     body.innerHTML=h;
   }
   async function open(){
-    plan=null;err="";overOk=false;sending=false;imgs=[];render();dlg.showModal();
+    plan=null;err="";overOk=false;sending=false;imgs=[];loading=true;render();dlg.showModal();
     await loadModels();
     const pr=await api("GET","/api/plugins").catch(()=>null);prompts=pr&&pr.ok?pr.json.plugins.flatMap(p=>(p.prompts||[]).map(x=>["plugin:"+p.id+":"+x.id,x.label+" \u00b7 "+p.name])):[];
     const r=await api("GET","/api/local/images?project="+encodeURIComponent(project())).catch(()=>null);
@@ -72,6 +74,7 @@ export function initFilm({get,t,esc,save,onSent}){
     const jr=await api("GET","/api/jobs").catch(()=>null);resume=null;
     if(jr&&jr.ok){const mine=jr.json.jobs.filter(j=>j.film&&j.title===project()),last=mine[0];
       if(last){const same=mine.filter(j=>j.film.id===last.film.id);if(!same.some(j=>j.film.part===0&&j.status==="done")&&same.some(j=>j.film.part>0&&j.status==="done")&&!same.some(j=>["queued","submitting","generating","downloading"].includes(j.status)))resume=last.film.id}}
+    loading=false;
     if(r&&r.ok){const seen=new Set();imgs=r.json.images.filter(i=>i.status==="done"&&i.url&&(i.kind==="reference"||i.kind==="plate")&&!seen.has(i.taskId)&&seen.add(i.taskId)).sort((a,b)=>a.kind===b.kind?a.taskId.localeCompare(b.taskId):a.kind==="reference"?-1:1)}
     ask();
   }

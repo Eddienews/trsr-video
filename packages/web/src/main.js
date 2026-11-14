@@ -19,6 +19,8 @@ const {GENRES,DIALOGUE,STYLES,LIGHTS,blank,example,num,fmt,cName}=core;
 const KEY="nwl-animation-prompt-v1";
 let S;
 try{S=Object.assign(blank(),JSON.parse(localStorage.getItem(KEY)||"null")||{})}catch(e){S=blank()}
+// Older versions saved a shot's length as text ("5"): read it back as a number.
+(S.shots||[]).forEach(s=>{if(typeof s.len==="string"&&s.len.trim()!==""&&isFinite(+s.len))s.len=+s.len});
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 
 /* ---------- helpers ---------- */
@@ -45,6 +47,23 @@ function copyLabels(){
 }
 
 /* ---------- rendering ---------- */
+const SF=["style","surface","physics"],LF=["lighting","grade"];
+// Text that is not exactly a preset's (or a preset that does not exist) is "custom": the select says so instead of naming a preset.
+function custom(map,key,fields){const p=map[key];return !p||fields.some(f=>String(S[f]||"").trim()&&S[f]!==p[f])}
+function popts(id,map,val,fields){const c=custom(map,val,fields);$(id).innerHTML=(c?'<option value="" selected>'+esc(t("customOpt"))+"</option>":"")+Object.keys(map).map(k=>'<option value="'+k+'"'+(!c&&k===val?" selected":"")+">"+esc(map[k][S.lang])+"</option>").join("")}
+function pick(kind,key,map,fields){
+  const was=prev[kind],n=map[S[key]];
+  if(!n){S[key]=was;renderStatic();return}
+  if(custom(map,was,fields)&&fields.some(f=>String(S[f]||"").trim())){
+    if(!confirm(t("confirmPreset"))){S[key]=was;renderStatic();return}
+    fields.forEach(f=>S[f]=n[f]);
+  }else{const o=map[was]||{};fields.forEach(f=>swap(f,o[f],n[f]))}
+  prev[kind]=S[key];renderStatic();
+}
+// Every label that sits right before its field is tied to it, so the field has a name for screen readers.
+let lblN=0;
+function linkLabels(){document.querySelectorAll("label:not([for])").forEach(l=>{if(l.querySelector("input,select,textarea"))return;const c=l.nextElementSibling;if(!c||!/^(INPUT|TEXTAREA|SELECT)$/.test(c.tagName))return;if(!c.id)c.id="fld-"+(++lblN);l.htmlFor=c.id})}
+new MutationObserver(()=>linkLabels()).observe(document.body,{childList:true,subtree:true});
 function opts(id,map,val){$(id).innerHTML=Object.keys(map).map(k=>'<option value="'+k+'"'+(k===val?" selected":"")+">"+esc(map[k][S.lang])+"</option>").join("")}
 function renderStatic(){
   document.documentElement.lang=S.lang==="pt"?"pt-BR":"en";
@@ -52,9 +71,9 @@ function renderStatic(){
   document.querySelectorAll("[data-t]").forEach(e=>e.textContent=t(e.dataset.t));
   document.querySelectorAll("[data-ph]").forEach(e=>e.placeholder=t(e.dataset.ph));
   document.querySelectorAll("[data-lang]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===S.lang));
-  opts("#genre",GENRES,S.genre);opts("#dialogue",DIALOGUE,S.dialogue);opts("#stylePreset",STYLES,S.stylePreset);opts("#lightPreset",LIGHTS,S.lightPreset);
+  opts("#genre",GENRES,S.genre);opts("#dialogue",DIALOGUE,S.dialogue);popts("#stylePreset",STYLES,S.stylePreset,SF);popts("#lightPreset",LIGHTS,S.lightPreset,LF);
   document.querySelectorAll("[data-k]").forEach(e=>{if(e.tagName!=="SELECT"||e.dataset.k==="aspect")e.value=S[e.dataset.k]});
-  renderToneNote();
+  renderToneNote();linkLabels();
 }
 function fld(list,i,f,label,ph,tag,extra){
   const v=esc(S[list][i][f]),a='data-list="'+list+'" data-i="'+i+'" data-f="'+f+'" placeholder="'+esc(ph||"")+'" '+(extra||"");
@@ -119,12 +138,15 @@ document.addEventListener("input",e=>{
   }
   if(el.dataset.k){
     const k=el.dataset.k;S[k]=k==="dur"?(parseInt(el.value)||0):el.value;
-    if(k==="stylePreset"){const o=STYLES[prev.style],n=STYLES[S.stylePreset];["style","surface","physics"].forEach(f=>swap(f,o[f],n[f]));prev.style=S.stylePreset;renderStatic()}
-    if(k==="lightPreset"){const o=LIGHTS[prev.light],n=LIGHTS[S.lightPreset];["lighting","grade"].forEach(f=>swap(f,o[f],n[f]));prev.light=S.lightPreset;renderStatic()}
+    if(k==="stylePreset")pick("style","stylePreset",STYLES,SF);
+    if(k==="lightPreset")pick("light","lightPreset",LIGHTS,LF);
+    if(SF.includes(k))popts("#stylePreset",STYLES,S.stylePreset,SF);
+    if(LF.includes(k))popts("#lightPreset",LIGHTS,S.lightPreset,LF);
     // A performance text written by hand is kept on a tone change, but the person is told and can take the new tone's text.
     if(k==="genre"){const neu=GENRES[S.genre].perf;swap("performance",(GENRES[prev.genre]||{}).perf,neu);toneKept=S.performance!==neu;prev.genre=S.genre;renderStatic()}
   }else if(el.dataset.list){
-    S[el.dataset.list][+el.dataset.i][el.dataset.f]=el.value;
+    const v=el.value,isLen=el.dataset.list==="shots"&&el.dataset.f==="len";
+    S[el.dataset.list][+el.dataset.i][el.dataset.f]=isLen&&v.trim()!==""&&isFinite(+v)?+v:v;
     // A new or renamed character must show up in the shots' "who" boxes.
     if((el.dataset.list==="chars"&&el.dataset.f==="name")||el.dataset.list==="plates"){const a=document.activeElement,id=[a.dataset.list,a.dataset.i,a.dataset.f],pos=a.selectionStart;renderLists();const b=document.querySelector('[data-list="'+id[0]+'"][data-i="'+id[1]+'"][data-f="'+id[2]+'"]');if(b){b.focus();try{b.setSelectionRange(pos,pos)}catch(_){}}}
   }
