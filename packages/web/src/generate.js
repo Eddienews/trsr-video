@@ -8,7 +8,7 @@ const ACTIVE=["queued","submitting","generating","downloading"];
 export function initGenerate({get,apply,t,esc,save}){
   const $=s=>document.querySelector(s);
   const genDlg=$("#genDlg"),setDlg=$("#setDlg");
-  let online=false,models=[],providers=[],limits={},paused=null,jobs=[];
+  let online=false,models=[],providers=[],limits={},paused=null,jobs=[],plugPrompts=[];
   let quote=null,quoteMsg="",overOk=false,sending=false,timer=null,quoteSeq=0;
 
   const api=async(method,url,body)=>{
@@ -25,6 +25,8 @@ export function initGenerate({get,apply,t,esc,save}){
     const r=await api("GET","/api/models");
     if(!r.ok)throw new Error("offline");
     ({models,providers,limits,paused}=r.json);
+    // Plugins may bring other ways of writing the prompt; they are listed with the app's own.
+    const pr=await api("GET","/api/plugins").catch(()=>null);plugPrompts=pr&&pr.ok?pr.json.plugins.flatMap(p=>(p.prompts||[]).map(x=>["plugin:"+p.id+":"+x.id,x.label+" \u00b7 "+p.name])):[];
   }
   /** The cheapest model and resolution that can make this film: the "cheap draft". */
   function cheapest(){
@@ -113,9 +115,13 @@ export function initGenerate({get,apply,t,esc,save}){
     h+='<div><label for="gRes">'+esc(t("gRes"))+'</label><select id="gRes"'+(rs.length?"":" disabled")+">"+rs.map(r=>'<option'+(r===g.resolution?" selected":"")+">"+esc(r)+"</option>").join("")+"</select></div></div>";
     if(m)h+='<p class="note">'+esc(rs.length?(m.duration.allowedS?t("gModelFixed")(m.duration.allowedS,rs.join(", ")):t("gModelLimits")(m.duration.minS,m.duration.maxS,rs.join(", "))):t("gNoRes"))+"</p>";
     if(m&&m.audio&&m.audioParam)h+='<label class="check"><input type="checkbox" id="gAudio"'+(g.audio?" checked":"")+">"+esc(t("gAudio"))+"</label>";
-    h+='<label for="gPrompt">'+esc(t("gPromptMode"))+'</label><select id="gPrompt">'+["auto","full","compact"].map(k=>'<option value="'+k+'"'+(k===g.promptMode?" selected":"")+">"+esc(t("gPromptModes")[k])+"</option>").join("")+"</select>";
+    h+='<label for="gPrompt">'+esc(t("gPromptMode"))+'</label><select id="gPrompt">'+[...["auto","full","compact"].map(k=>[k,t("gPromptModes")[k]]),...plugPrompts].map(o=>'<option value="'+esc(o[0])+'"'+(o[0]===g.promptMode?" selected":"")+">"+esc(o[1])+"</option>").join("")+"</select>";
+    // A prompt written by a plugin, or a film sent with reference images, goes through the film window: it shows the images, the prompt and the cost before the OK.
+    const viaFilm=String(g.promptMode||"").startsWith("plugin:"),takesRefs=!!(m&&m.inputs&&m.inputs.referenceImages);
+    if(viaFilm)h+='<p class="note">'+esc(t("gPlugNote"))+"</p>";
+    else if(takesRefs)h+='<div class="actions" style="margin-top:8px"><button type="button" class="btn sm" id="gRefs">'+esc(t("gRefs"))+"</button></div>";
     if(c&&(c.m.id!==g.modelId||c.r!==g.resolution))h+='<div class="actions" style="margin-top:8px"><button type="button" class="btn sm" id="gCheap">'+esc(t("gCheap")(c.m.label,c.r))+"</button></div>";
-    if(quote){
+    if(quote&&!viaFilm){
       for(const i of quote.issues)h+='<div class="alert'+(i.blocking?"":" soft")+'">'+esc(issueText(i))
         +(quote.fit&&i===quote.issues.find(x=>x.blocking&&/^(duration|shotsDontAddUp)/.test(x.code))?'<br><button type="button" class="btn sm" id="gFit">'+esc(t("gFit")(quote.fit.dur,quote.fit.lens.join(" + ")+" s"))+"</button>":"")+"</div>";
       h+='<table class="quote"><tbody>'
@@ -135,8 +141,8 @@ export function initGenerate({get,apply,t,esc,save}){
     for(const o of over)h+='<div class="alert soft">'+esc(t("gOver")[o])+"</div>";
     if(over.length)h+='<label class="check"><input type="checkbox" id="gOver"'+(overOk?" checked":"")+">"+esc(t("gOverOk"))+"</label>";
     if(quoteMsg)h+='<div class="alert soft">'+esc(quoteMsg)+"</div>";
-    const off=blocking||noKey||sending||(over.length&&!overOk);
-    h+='<div class="actions"><button type="button" class="btn" id="gCancel">'+esc(t("gCancel"))+'</button><button type="button" class="btn sun" id="gOk"'+(off?" disabled":"")+">"+esc(sending?t("gSending"):t("gOk"))+"</button></div>";
+    const off=viaFilm?!m:blocking||noKey||sending||(over.length&&!overOk);
+    h+='<div class="actions"><button type="button" class="btn" id="gCancel">'+esc(t("gCancel"))+'</button><button type="button" class="btn sun" id="gOk"'+(off?" disabled":"")+">"+esc(sending?t("gSending"):viaFilm?t("gNext"):t("gOk"))+"</button></div>";
     $("#genBody").innerHTML=h;
     renderPick();
   }
@@ -166,7 +172,7 @@ export function initGenerate({get,apply,t,esc,save}){
   genDlg.addEventListener("click",e=>{
     const b=e.target.closest("button");if(!b)return;
     if(b.id==="gCancel")genDlg.close();
-    else if(b.id==="gOk")confirm();
+    else if(b.id==="gOk"||b.id==="gRefs"){if(b.id==="gRefs"||String(sel().promptMode||"").startsWith("plugin:")){genDlg.close();document.dispatchEvent(new CustomEvent("trsr:film"))}else confirm()}
     else if(b.id==="gKey"){genDlg.close();openSettings()}
     else if(b.id==="gCheap"){const c=cheapest(),g=sel();g.modelId=c.m.id;g.resolution=c.r;save();overOk=false;quote=null;renderGen();askQuote()}
     else if(b.id==="gFit"&&quote&&quote.fit){

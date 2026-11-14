@@ -3,7 +3,8 @@
 import {randomUUID} from "node:crypto";
 import {ProviderError,type FetchLike} from "./types";
 
-export interface CloudImageRequest{apiModelId:string;prompt:string;width:number;height:number;seed:number;steps?:number}
+/** `seed` is left out for models that do not take one; `referenceImages` (data URIs) are the images the new one is drawn from. */
+export interface CloudImageRequest{apiModelId:string;prompt:string;width:number;height:number;seed?:number;steps?:number;referenceImages?:string[];settings?:Record<string,unknown>}
 export interface CloudImageResult{bytes:Buffer;ext:string;costUSD?:number}
 export type CloudImageMaker=(req:CloudImageRequest,apiKey:string)=>Promise<CloudImageResult>;
 
@@ -17,8 +18,11 @@ export function runwareImage(endpoint:string,fetchImpl:FetchLike=fetch as unknow
   return async(req,apiKey)=>{
     if(!apiKey)throw new ProviderError("auth","No Runware API key configured.","missingApiKey");
     const task:Record<string,unknown>={taskType:"imageInference",taskUUID:randomUUID(),model:req.apiModelId,positivePrompt:req.prompt.slice(0,10000),
-      width:req.width,height:req.height,seed:req.seed,numberResults:1,outputType:"URL",outputFormat:"PNG",includeCost:true};
+      width:req.width,height:req.height,numberResults:1,outputType:"URL",outputFormat:"PNG",includeCost:true};
+    if(typeof req.seed==="number")task.seed=req.seed;
     if(req.steps)task.steps=req.steps;
+    if(req.referenceImages?.length)task.inputs={referenceImages:req.referenceImages};
+    if(req.settings&&Object.keys(req.settings).length)task.settings=req.settings;
     let res;
     try{res=await fetchImpl(endpoint,{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+apiKey},body:JSON.stringify([task])})}
     catch(err){throw new ProviderError("network","Could not reach Runware: "+(err as Error).message)}

@@ -32,6 +32,11 @@ export class Ffmpeg{
     const r=await this.exec(this.cmd,["-y","-hide_banner","-loglevel","error","-i",src,"-vf","scale='min(1280,iw)':-2","-q:v","3",dest]);
     if(r.code!==0)throw new Error("ffmpeg: "+(r.out.trim().split("\n").pop()||"failed").slice(0,300));
   }
+  /** The last frame of a clip as a JPEG. */
+  async lastFrame(src:string,dest:string){
+    const r=await this.exec(this.cmd,["-y","-hide_banner","-loglevel","error","-sseof","-0.5","-i",src,"-update","1","-q:v","2",dest]);
+    if(r.code!==0)throw new Error("ffmpeg: "+(r.out.trim().split("\n").pop()||"failed").slice(0,300));
+  }
   /** The arguments that join clips end to end. Picture and sound are written again so clips from separate generations line up. */
   static concatArgs(list:string,out:string){
     return ["-y","-hide_banner","-loglevel","error","-f","concat","-safe","0","-i",list,"-c:v","libx264","-crf","16","-preset","medium","-pix_fmt","yuv420p","-c:a","aac","-b:a","192k","-movflags","+faststart",out];

@@ -15,7 +15,7 @@ export interface LocalImage{
 }
 export type NewImage=Pick<LocalImage,"project"|"taskId"|"kind"|"label"|"modelId"|"prompt"|"width"|"height"|"refs">&{seed?:number;seconds?:number;modelLabel?:string};
 /** A cloud model makes the image instead of ComfyUI: same request, plus what it cost. */
-export type CloudMake=(r:{prompt:string;width:number;height:number;seed:number})=>Promise<{bytes:Buffer;ext:string;costUSD?:number}>;
+export type CloudMake=(r:{prompt:string;width:number;height:number;seed:number;refs:{name:string;bytes:Buffer}[]})=>Promise<{bytes:Buffer;ext:string;costUSD?:number}>;
 
 /* The local image queue: one image at a time (one GPU), kept in data/images.json, files in data/images/.
    Like the video queue, nothing is sent again on its own: what was waiting or running when the server
@@ -49,6 +49,13 @@ export class ImageStore{
     const item:LocalImage={id,project:n.project,taskId:"music",kind:"music",label:n.label,modelId:"upload",modelLabel:"",prompt:"",seed:0,width:0,height:0,refs:[],status:"done",file:id+"."+n.ext,createdAt:now,finishedAt:now};
     this.items.push(item);this.save();return item;
   }
+  /** An image that arrives already made (a page a plugin put together from other images): kept as it is, "done", at no cost. */
+  addDone(n:{project:string;taskId:string;kind:string;label:string;modelLabel:string;ext:string;bytes:Buffer;width:number;height:number;refs:string[]}):LocalImage{
+    const id=randomUUID(),now=new Date().toISOString();
+    writeFileSync(path.join(this.dir,id+"."+n.ext),n.bytes);
+    const item:LocalImage={id,project:n.project,taskId:n.taskId,kind:n.kind,label:n.label,modelId:"plugin-page",modelLabel:n.modelLabel,prompt:"",seed:0,width:n.width,height:n.height,refs:n.refs,status:"done",file:id+"."+n.ext,createdAt:now,finishedAt:now};
+    this.items.push(item);this.save();return item;
+  }
   async cancel(id:string):Promise<"canceled"|"notFound"|"tooLate">{
     const i=this.get(id);if(!i)return "notFound";
     if(i.status==="queued"){i.status="canceled";i.finishedAt=new Date().toISOString();this.save();return "canceled"}
@@ -69,7 +76,7 @@ export class ImageStore{
         try{
           const refs=i.refs.map((rid,n)=>{const r=this.get(rid);if(!r?.file)throw new ComfyError("missing","A reference image is gone.");return {name:"ref-"+i.id+"-"+n+".png",bytes:readFileSync(path.join(this.dir,r.file))}});
           const cloud=this.o.cloud?.[i.modelId];
-          const {bytes,ext,costUSD}:{bytes:Buffer;ext:string;costUSD?:number}=cloud?await cloud({prompt:i.prompt,width:i.width,height:i.height,seed:i.seed})
+          const {bytes,ext,costUSD}:{bytes:Buffer;ext:string;costUSD?:number}=cloud?await cloud({prompt:i.prompt,width:i.width,height:i.height,seed:i.seed,refs})
             :await this.o.comfy.make({modelId:i.modelId,prompt:i.prompt,width:i.width,height:i.height,seed:i.seed,refs,seconds:i.seconds},{signal,onStart:cid=>this.comfyIds.set(i.id,cid)});
           if(typeof costUSD==="number")i.costUSD=costUSD;
           if(signal.aborted)throw new ComfyError("canceled","Canceled.");

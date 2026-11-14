@@ -358,7 +358,7 @@ summary{cursor:pointer;font-weight:500;color:var(--text-2)}
           <div><label data-t="aspect"></label><select data-k="aspect"><option value="16:9 horizontal">16:9</option><option value="9:16 vertical">9:16</option><option value="1:1 square">1:1</option></select></div>
         </div>
         <div class="row">
-          <div><label data-t="genre"></label><select data-k="genre" id="genre"></select></div>
+          <div><label data-t="genre"></label><select data-k="genre" id="genre"></select><p class="note" id="toneNote" hidden></p></div>
           <div><label data-t="dialogue"></label><select data-k="dialogue" id="dialogue"></select></div>
         </div>
         <label><span data-t="logline"></span> <small data-t="loglineS"></small></label>
@@ -451,6 +451,7 @@ summary{cursor:pointer;font-weight:500;color:var(--text-2)}
           <button type="button" data-media="mus" data-t="mdMusic" aria-pressed="false"></button>
         </div>
         <div id="img"></div>
+        <div id="plug"></div>
         <div id="mus" hidden></div>
       </div>
       <div class="pane col" data-rtab-id="prompt">

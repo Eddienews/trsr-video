@@ -1,6 +1,9 @@
 // Interface text of the "film in parts" window.
 export const F={pt:{
-  fTitle:n=>"Filme em "+n+" partes",
+  fTitle:n=>"Filme em "+n+" partes",fTitle1:"Filme em uma geração",
+  fHint1:m=>"O filme cabe em uma geração do "+m+". Escolha as imagens de referência que vão junto: são elas que mantêm os personagens e o cenário iguais ao que você aprovou. Nada é enviado nem cobrado antes do OK.",
+  fRefs1:"Imagens de referência enviadas com o filme",fNote1:(m,r)=>m+", "+r+".",fOk1:"OK, gerar o filme",
+  fChain:"Começar cada parte no último quadro da parte anterior (ocupa uma vaga de referência)",
   fHint:(d,m,max)=>"O filme tem "+d+" s e o "+m+" gera até "+max+" s por vez. Ele será gerado em partes que quebram sempre entre duas tomadas, e as partes são unidas num MP4 no fim. Nada é enviado nem cobrado antes do OK.",
   fRefs:"Imagens de referência enviadas em todas as partes",
   fRefsHint:max=>"São elas que mantêm os personagens e o cenário iguais de uma parte para a outra. Este modelo aceita até "+max+".",
@@ -15,7 +18,10 @@ export const F={pt:{
     refsUnsupported:"Este modelo não aceita imagens de referência.",tooManyRefs:"Referências demais para este modelo.",refNotFound:"Uma imagem de referência não foi encontrada.",noKey:"Falta a chave desta plataforma em Configurações.",
     estimateChanged:"O custo mudou. Confira o novo total antes de confirmar.",overLimit:"O total passa do seu limite de gasto.",invalid:"Uma das partes não pode ser gerada como está.",notConfirmed:"Falta confirmar."}
 },en:{
-  fTitle:n=>"Film in "+n+" parts",
+  fTitle:n=>"Film in "+n+" parts",fTitle1:"Film in one generation",
+  fHint1:m=>"The film fits in one generation of "+m+". Choose the reference images that go with it: they are what keeps the characters and the set as you approved them. Nothing is sent or charged before you click OK.",
+  fRefs1:"Reference images sent with the film",fNote1:(m,r)=>m+", "+r+".",fOk1:"OK, generate the film",
+  fChain:"Start each part on the last frame of the part before it (takes one reference slot)",
   fHint:(d,m,max)=>"The film is "+d+" s long and "+m+" makes up to "+max+" s at a time. It will be generated in parts that always break between two shots, and the parts are joined into one MP4 at the end. Nothing is sent or charged before you click OK.",
   fRefs:"Reference images sent with every part",
   fRefsHint:max=>"They are what keeps the characters and the set the same from one part to the next. This model takes up to "+max+".",

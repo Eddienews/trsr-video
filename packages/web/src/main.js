@@ -7,6 +7,7 @@ import {I} from "./i18n-images.js";
 import {initMusic} from "./music.js";
 import {M} from "./i18n-music.js";
 import {initFilm} from "./film.js";
+import {initPlugins} from "./plugins.js";
 import {F} from "./i18n-film.js";
 Object.assign(T.pt,G.pt,I.pt,M.pt,F.pt);Object.assign(T.en,G.en,I.en,M.en,F.en);
 let gen=null;
@@ -53,6 +54,7 @@ function renderStatic(){
   document.querySelectorAll("[data-lang]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===S.lang));
   opts("#genre",GENRES,S.genre);opts("#dialogue",DIALOGUE,S.dialogue);opts("#stylePreset",STYLES,S.stylePreset);opts("#lightPreset",LIGHTS,S.lightPreset);
   document.querySelectorAll("[data-k]").forEach(e=>{if(e.tagName!=="SELECT"||e.dataset.k==="aspect")e.value=S[e.dataset.k]});
+  renderToneNote();
 }
 function fld(list,i,f,label,ph,tag,extra){
   const v=esc(S[list][i][f]),a='data-list="'+list+'" data-i="'+i+'" data-f="'+f+'" placeholder="'+esc(ph||"")+'" '+(extra||"");
@@ -95,12 +97,19 @@ function renderLive(){
   $("#prompt").innerHTML=blocks().map(([h,l])=>'<span class="h">==== '+esc(h)+" ====</span>"+(l.length?"\n"+esc(l.join("\n")):"")).join("\n\n");
   copyLabels();
   save();
-  if(gen){gen.refresh();if(gen.images)gen.images.refresh();if(gen.music)gen.music.refresh()}
+  if(gen){gen.refresh();if(gen.images)gen.images.refresh();if(gen.plugins)gen.plugins.refresh();if(gen.music)gen.music.refresh()}
 }
 function renderAll(){renderStatic();renderLists();renderLive()}
 
 /* ---------- events ---------- */
 function swap(field,oldV,newV){if(!S[field].trim()||S[field]===oldV)S[field]=newV}
+let toneKept=false;
+function renderToneNote(){
+  const el=$("#toneNote");if(!el)return;
+  const g=GENRES[S.genre],show=toneKept&&!!g&&S.performance!==g.perf;
+  el.hidden=!show;
+  el.innerHTML=show?esc(t("toneKept")(g[S.lang]||g.en))+' <button type="button" id="tonePerf">'+esc(t("toneUse"))+"</button>":"";
+}
 let prev={style:S.stylePreset,light:S.lightPreset,genre:S.genre};
 document.addEventListener("input",e=>{
   const el=e.target;
@@ -112,7 +121,8 @@ document.addEventListener("input",e=>{
     const k=el.dataset.k;S[k]=k==="dur"?(parseInt(el.value)||0):el.value;
     if(k==="stylePreset"){const o=STYLES[prev.style],n=STYLES[S.stylePreset];["style","surface","physics"].forEach(f=>swap(f,o[f],n[f]));prev.style=S.stylePreset;renderStatic()}
     if(k==="lightPreset"){const o=LIGHTS[prev.light],n=LIGHTS[S.lightPreset];["lighting","grade"].forEach(f=>swap(f,o[f],n[f]));prev.light=S.lightPreset;renderStatic()}
-    if(k==="genre"){swap("performance",GENRES[prev.genre].perf,GENRES[S.genre].perf);prev.genre=S.genre;renderStatic()}
+    // A performance text written by hand is kept on a tone change, but the person is told and can take the new tone's text.
+    if(k==="genre"){const neu=GENRES[S.genre].perf;swap("performance",(GENRES[prev.genre]||{}).perf,neu);toneKept=S.performance!==neu;prev.genre=S.genre;renderStatic()}
   }else if(el.dataset.list){
     S[el.dataset.list][+el.dataset.i][el.dataset.f]=el.value;
     // A new or renamed character must show up in the shots' "who" boxes.
@@ -137,6 +147,7 @@ document.addEventListener("click",e=>{
     renderLists();renderLive();return}
   if(b.dataset.go){const el=$("#shot"+b.dataset.go);if(el){if(window.trsrShow)window.trsrShow(el);el.scrollIntoView({block:"center"});const ta=el.querySelector("textarea");if(ta)ta.focus({preventScroll:true})}return}
   switch(b.id){
+    case "tonePerf":{const g=GENRES[S.genre];if(g)S.performance=g.perf;toneKept=false;renderStatic();renderLive();break}
     case "addPlate":S.plates=S.plates||[];S.plates.push({name:"",desc:""});renderLists();renderLive();break;
     case "addChar":S.chars.push({name:"",nick:"",look:"",ward:"",prop:"",pers:""});renderLists();renderLive();break;
     case "addShot":{const left=Math.max(1,Math.min(8,(+S.dur||0)-total()));S.shots.push({len:left,lens:"50mm medium",move:"LOCKED.",act:"",who:[],start:"",end:""});renderLists();renderLive();break}
@@ -161,5 +172,6 @@ gen=initGenerate({
 // Images made on this computer (ComfyUI): the tab only appears when the local server answers.
 gen.images=initImages({get:()=>S,t,esc,save,showStill:gen.showStill});
 gen.music=initMusic({get:()=>S,t,esc,save});
+gen.plugins=initPlugins({get:()=>S,esc,save,showStill:gen.showStill});
 // A film longer than one generation of the chosen model is generated in parts.
 gen.film=initFilm({get:()=>S,t,esc,save,onSent:()=>{gen.poll();if(window.trsrShow)window.trsrShow(document.querySelector("#lib"))}});

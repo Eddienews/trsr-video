@@ -19,6 +19,8 @@ export interface Job{
   film?:{id:string;part:number;count:number};
   /** Ids of local images sent as references with this generation. */
   refImages?:string[];
+  /** The last frame of the part before this one goes with it as one more reference, so this part starts where that one ended. */
+  chain?:boolean;
 }
 export interface QueueDeps{
   dataDir:string;
@@ -37,6 +39,8 @@ export interface QueueDeps{
   refImage?:(id:string)=>Promise<string>;
   /** Joins the parts of a film into one MP4. */
   join?:(files:string[],out:string)=>Promise<void>;
+  /** The last frame of a finished clip as a data URI. */
+  lastFrame?:(video:string)=>Promise<string>;
 }
 const TERMINAL:JobStatus[]=["done","failed","canceled"];
 
@@ -115,15 +119,25 @@ export class JobQueue{
     for(const x of this.jobs)if(x.film?.id===j.film.id&&x.status==="queued"){x.status="canceled";x.finishedAt=this.stamp();x.waiting=undefined}
   }
   /** When the last part is in, the parts are joined into one MP4, listed as a generation of its own. It is not a new charge. */
-  private async afterPart(j:Job){
+  /** Joins the parts of a film again, with the newest finished clip of each part (no generation, no cost). False when a part is missing. */
+  async rejoin(filmId:string):Promise<boolean>{
+    const j=this.jobs.find(x=>x.film?.id===filmId&&x.film.part>0);
+    if(!j||!j.film||!this.d.join)return false;
+    const n=this.jobs.length;await this.afterPart(j,true);return this.jobs.length>n;
+  }
+  private async afterPart(j:Job,force=false){
     if(!j.film||!this.d.join)return;
     // One finished clip per part: after a film is resumed, a part may have an older failed attempt next to the good one.
     const good=this.jobs.filter(x=>x.film?.id===j.film!.id&&x.film.part>0&&x.status==="done"&&x.videoFile);
     const found=Array.from({length:j.film.count},(_v,k)=>good.filter(x=>x.film!.part===k+1).pop());
     if(found.some(p=>!p))return;
-    // Already joined, and no part was made again since: nothing to do. A part made again joins the film again.
-    const joined=this.jobs.map((x,i)=>x.film?.id===j.film!.id&&x.film.part===0&&x.status==="done"?i:-1).reduce((a,i)=>Math.max(a,i),-1);
-    if(joined>=0&&found.every(p=>this.jobs.indexOf(p!)<joined))return;
+    if(!force){
+      // Other parts of this film are still waiting or being made (two parts made again): join once, when the last one is done.
+      if(this.jobs.some(x=>x.film?.id===j.film!.id&&x.film.part>0&&!["done","failed","canceled"].includes(x.status)))return;
+      // Already joined after every part was finished: nothing to do. A part finished since then joins the film again.
+      const last=this.jobs.filter(x=>x.film?.id===j.film!.id&&x.film.part===0&&x.status==="done").map(x=>x.finishedAt||"").sort().pop();
+      if(last&&found.every(p=>(p!.finishedAt||"")<=last))return;
+    }
     const parts=found as Job[];
     const file=j.film.id+"-film.mp4",known=parts.every(p=>typeof p.realUSD==="number");
     const whole:Job={...j,id:randomUUID(),createdAt:this.stamp(),startedAt:undefined,finishedAt:this.stamp(),status:"done",film:{id:j.film.id,part:0,count:j.film.count},
@@ -142,10 +156,17 @@ export class JobQueue{
       if(!j.taskId){
         const max=this.d.maxRetries??40;
         const referenceImages=j.refImages?.length&&this.d.refImage?await Promise.all(j.refImages.map(r=>this.d.refImage!(r))):undefined;
+        let refs=referenceImages;
+        if(j.chain&&j.film&&j.film.part>1){
+          // The parts are made one at a time, in order, so the part before this one is finished by now.
+          const prev=this.jobs.filter(x=>x.film?.id===j.film!.id&&x.film.part===j.film!.part-1&&x.status==="done"&&x.videoFile).pop();
+          if(!prev||!this.d.lastFrame)throw new ProviderError("invalid","This part continues from the last frame of part "+(j.film.part-1)+", and that part is not there.","noPreviousPart");
+          refs=[...(refs||[]),await this.d.lastFrame(path.join(this.videos,prev.videoFile!))];
+        }
         for(let attempt=0;;attempt++){
           if((j.status as JobStatus)==="canceled")return;
           j.status="submitting";j.startedAt??=this.stamp();this.save();
-          try{j.taskId=(await adapter.submit({model,prompt:j.prompt,size:j.size,resolution:j.resolution,aspect:aspectKey(j.state.aspect),durationS:j.durationS,audio:j.audio,referenceImages},key)).taskId;break}
+          try{j.taskId=(await adapter.submit({model,prompt:j.prompt,size:j.size,resolution:j.resolution,aspect:aspectKey(j.state.aspect),durationS:j.durationS,audio:j.audio,referenceImages:refs},key)).taskId;break}
           catch(e){
             // The provider holds the credit of a request while it runs; with a low balance the next one is refused.
             // Wait and try again. Anything else is final.

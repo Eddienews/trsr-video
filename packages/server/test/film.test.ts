@@ -24,7 +24,7 @@ async function boot(script:Parameters<typeof fakeRunware>[0]){
   const env=new EnvFile(path.join(dir,".env"));rw=fakeRunware(script);
   const images=new ImageStore({dataDir:dir,comfy:new Comfy(()=>"http://127.0.0.1:9")});
   queue=new JobQueue({dataDir:dir,adapters:{runware:runwareAdapter("https://api.runware.ai/v1",rw.fetchImpl)},model:id=>registry.models.find(m=>m.id===id),
-    apiKey:p=>env.get(registry.providers[p].envKey),sleep:async()=>{},download:async()=>{},refImage:async id=>"data:image/jpeg;base64,"+id,join:async files=>{joined.push(files)}});
+    apiKey:p=>env.get(registry.providers[p].envKey),sleep:async()=>{},download:async()=>{},refImage:async id=>"data:image/jpeg;base64,"+id,join:async files=>{joined.push(files)},lastFrame:async f=>"data:image/jpeg;base64,last-of-"+path.basename(f)});
   const app=createApp({env,registry,queue,videosDir:path.join(dir,"videos"),version:"test",local:{comfy:new Comfy(()=>"http://127.0.0.1:9"),images,ffmpeg:new Ffmpeg(()=>"",async()=>({code:0,out:""}))}});
   server=http.createServer(app);await new Promise<void>(r=>server.listen(0,"127.0.0.1",()=>r()));
   base="http://127.0.0.1:"+(server.address() as any).port;
@@ -59,6 +59,20 @@ describe("a film longer than one generation",()=>{
     expect(short.json.totalUSD).toBe(5.64);
     expect(short.json.parts[0].prompt).toContain("<<<image_1>>> = the reference of THE LEOPARD");
     expect((await api("POST","/api/estimate-film",{...ask,partS:99,state:film()})).json.parts).toHaveLength(4);
+  });
+  it("chained: each part after the first also carries the last frame of the part before it",async()=>{
+    await boot([ack("A"),success("A",0.54),ack("B"),success("B",0.55),ack("C"),success("C",0.54),ack("D"),success("D",0.56)]);
+    const plan=await api("POST","/api/estimate-film",{...ask,chain:true,state:film()});
+    expect(plan.json.totalUSD).toBe(2.16);
+    expect(plan.json.parts[0].prompt).not.toContain("last frame of the previous part");
+    expect(plan.json.parts[1].prompt).toContain("IMAGE 4 is the last frame of the previous part");
+    const r=await api("POST","/api/generate-film",{...ask,chain:true,state:film(),confirmed:true,estimateUSD:2.16});
+    expect(r.status).toBe(202);await settled();
+    const sent=rw.calls.map(c=>c.tasks[0]).filter(t=>t.taskType==="videoInference"),done=queue.list().filter(j=>j.film&&j.film.part>0).sort((a,b)=>a.film!.part-b.film!.part);
+    expect(sent).toHaveLength(4);
+    expect(JSON.stringify(sent[0])).not.toContain("last-of-");
+    for(const k of [1,2,3])expect(JSON.stringify(sent[k])).toContain("last-of-"+done[k-1].videoFile);
+    expect(joined).toHaveLength(1);
   });
   it("nothing is sent without the OK and the total the person saw",async()=>{
     await boot([]);

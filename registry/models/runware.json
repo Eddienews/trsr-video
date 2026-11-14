@@ -331,5 +331,83 @@
     "notes": "Prices are the 50%-off prices the docs list until 2026-12-31 (regular: 480p 0.025, 768p 0.04); each input image beyond the first five adds 0.01 (regular 0.02), not counted in the estimate. multiShot and audio are NOT stated in the docs and not tested yet: assumed, to be confirmed by the first NorthWindLab test. Frame images cannot be combined with reference images.",
     "docsUrl": "https://runware.ai/docs/models/minimax-h3-lite",
     "verifiedAt": "2026-11-11"
+  },
+  {
+    "id": "wan-3.0",
+    "label": "Wan 3.0",
+    "provider": "runware",
+    "apiModelId": "alibaba:wan@3.0",
+    "duration": {
+      "minS": 2,
+      "maxS": 30
+    },
+    "multiShot": true,
+    "audio": true,
+    "audioParam": "settings.audio",
+    "inputs": {
+      "referenceImages": 10,
+      "firstFrame": true,
+      "lastFrame": true,
+      "refToken": "Image {n}"
+    },
+    "maxPromptChars": 20000,
+    "sizes": {
+      "480p": {
+        "16:9": [
+          832,
+          480
+        ],
+        "9:16": [
+          480,
+          832
+        ],
+        "1:1": [
+          624,
+          624
+        ]
+      },
+      "720p": {
+        "16:9": [
+          1280,
+          720
+        ],
+        "9:16": [
+          720,
+          1280
+        ],
+        "1:1": [
+          960,
+          960
+        ]
+      },
+      "1080p": {
+        "16:9": [
+          1920,
+          1080
+        ],
+        "9:16": [
+          1080,
+          1920
+        ],
+        "1:1": [
+          1440,
+          1440
+        ]
+      }
+    },
+    "pricing": {
+      "currency": "USD",
+      "perSecond": {
+        "480p": 0.05,
+        "720p": 0.1,
+        "1080p": 0.2
+      },
+      "source": "official",
+      "asOf": "2026-11-12",
+      "measured": []
+    },
+    "notes": "multiShot is NOT stated in the docs and not tested yet: assumed, to be confirmed by the first NorthWindLab test. The prompt names the images Image 1, Image 2 (array order). Frame images cannot be combined with reference images. settings.promptExtend (an LLM rewrites the prompt) is on by default and is not sent by this app.",
+    "docsUrl": "https://runware.ai/docs/models/alibaba-wan3-0",
+    "verifiedAt": "2026-11-12"
   }
 ]
