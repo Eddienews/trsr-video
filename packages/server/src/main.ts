@@ -14,6 +14,7 @@ import {xaiAdapter} from "./providers/xai";
 import {ltxAdapter} from "./providers/ltx";
 import {klingAdapter} from "./providers/kling";
 import {googleAdapter} from "./providers/google";
+import {comfyuiAdapter} from "./providers/comfyui";
 import {checkKey} from "./providers/check";
 import {Comfy} from "./local/comfy";
 import {ImageStore} from "./local/images";
@@ -42,6 +43,8 @@ const adapters={
   ltx:ltxAdapter(P.ltx.endpoint),
   kling:klingAdapter(P.kling.endpoint),
   google:googleAdapter(P.google.endpoint),
+  // Video on this computer: the same ComfyUI as the local images (COMFYUI_URL).
+  comfyui:comfyuiAdapter(()=>env.get("COMFYUI_URL")||P.comfyui.endpoint),
 };
 // Images on this computer: ComfyUI at COMFYUI_URL (http://127.0.0.1:8188 unless set in .env).
 const comfy=new Comfy(()=>env.get("COMFYUI_URL"));

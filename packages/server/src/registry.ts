@@ -4,6 +4,8 @@ import type {ModelEntry} from "@trsr-video/core";
 
 export interface ProviderEntry{label:string;envKey:string;keyHint?:string;endpoint:string;docsUrl:string;capabilities:{cancel:boolean;reportsCost:boolean}}
 export interface Registry{providers:Record<string,ProviderEntry>;models:ModelEntry[]}
+/** A provider with no envKey (this computer) needs no key. */
+export const keyless=(p:ProviderEntry|undefined)=>!!p&&!p.envKey;
 
 /** Reads registry/providers.json and every registry/models/*.json. A new model is one more entry there. */
 export function loadRegistry(dir:string):Registry{

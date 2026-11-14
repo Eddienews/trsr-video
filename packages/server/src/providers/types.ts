@@ -27,6 +27,8 @@ export interface ProviderAdapter{
   /** Sends the generation and returns the provider's task id. */
   submit(req:SubmitRequest,apiKey:string):Promise<{taskId:string}>;
   poll(taskId:string,apiKey:string):Promise<PollResult>;
+  /** How long a run may take before the queue gives up; the queue's own default (30 minutes) otherwise. */
+  timeoutMs?:number;
   /** Present only when the provider can cancel a running task. */
   cancel?(taskId:string,apiKey:string):Promise<void>;
 }

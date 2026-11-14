@@ -178,7 +178,7 @@ export class JobQueue{
         j.waiting=undefined;
       }
       j.status="generating";this.save();
-      const sched=this.d.pollMs??[5000,5000,8000,10000],deadline=this.now().getTime()+(this.d.timeoutMs??30*60*1000);
+      const sched=this.d.pollMs??[5000,5000,8000,10000],limit=this.d.timeoutMs??adapter.timeoutMs??30*60*1000,deadline=this.now().getTime()+limit;
       let netErrors=0;
       for(let i=0;;i++){
         await this.sleep(sched[Math.min(i,sched.length-1)]);
@@ -198,7 +198,7 @@ export class JobQueue{
           await this.afterPart(j);return;
         }
         if(typeof r.progress==="number")j.progress=r.progress;
-        if(this.now().getTime()>deadline)throw new ProviderError("provider","No result after "+Math.round((this.d.timeoutMs??30*60*1000)/60000)+" minutes. The request may still finish at the provider; check its dashboard.","timeout");
+        if(this.now().getTime()>deadline)throw new ProviderError("provider","No result after "+Math.round((this.d.timeoutMs??this.d.adapters[j.provider]?.timeoutMs??30*60*1000)/60000)+" minutes. The request may still finish at the provider; check its dashboard.","timeout");
         this.save();
       }
     }catch(e){

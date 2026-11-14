@@ -68,8 +68,8 @@ describe("checkKey",()=>{
     expect((await checkKey("pika",KEY,P.pika.endpoint,async()=>{throw new Error("ENOTFOUND")})).result).toBe("unknown");
     const r=await checkKey("pika",KEY,P.pika.endpoint,()=>new Promise(()=>{}),30);expect(r.result).toBe("unknown");expect(r.message).toContain("no answer");
   });
-  it("every provider in the registry has a test",async()=>{
-    for(const id of Object.keys(P)){const x=fake(404,{});const r=await checkKey(id,id==="higgsfield"?"a123456:b123456":KEY,P[id].endpoint,x.f);expect(r.message||"").not.toContain("No test is available")}
+  it("every provider with a key has a test",async()=>{
+    for(const id of Object.keys(P).filter(id=>P[id].envKey)){const x=fake(404,{});const r=await checkKey(id,id==="higgsfield"?"a123456:b123456":KEY,P[id].endpoint,x.f);expect(r.message||"").not.toContain("No test is available")}
   });
 });
 

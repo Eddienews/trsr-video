@@ -20,7 +20,12 @@ export function initFilm({get,t,esc,save,onSent}){
   const maxRefs=()=>{const m=model();return (m&&m.inputs&&m.inputs.referenceImages)||0};
   // The references the person left ticked; the first time, every character and set there is, up to what the model takes.
   const chosen=()=>{const S=get(),ids=imgs.map(i=>i.id);
-    if(!S.film||!Array.isArray(S.film.refs))return ids.slice(0,maxRefs());
+    // Ticks saved for another project (or none of them here any more) do not carry over: a new film starts with all of its own.
+    const tasks=imgs.map(i=>i.taskId);
+    const mine=S.film&&Array.isArray(S.film.refs)&&(S.film.project?S.film.project===project():!S.film.refs.length||S.film.refs.some(id=>ids.includes(id)))&&(!Array.isArray(S.film.tasks)||!S.film.tasks.length||S.film.tasks.some(x=>tasks.includes(x)));
+    if(!mine)return ids.slice(0,maxRefs());
+    // An image made again (same character or set) takes the place of the one that was ticked.
+    if(Array.isArray(S.film.tasks))return imgs.filter(i=>S.film.tasks.includes(i.taskId)).map(i=>i.id).slice(0,maxRefs());
     return S.film.refs.filter(id=>ids.includes(id)).slice(0,maxRefs())};
   const loadModels=async()=>{const r=await api("GET","/api/models").catch(()=>null);if(r&&r.ok)models=r.json.models};
 
@@ -96,7 +101,7 @@ export function initFilm({get,t,esc,save,onSent}){
     if(!e.target.dataset.ref)return;
     const S=get(),cur=chosen().filter(id=>id!==e.target.dataset.ref);
     if(e.target.checked)cur.push(e.target.dataset.ref);
-    S.film={refs:imgs.map(i=>i.id).filter(id=>cur.includes(id))};save();overOk=false;ask();
+    {const on=imgs.filter(i=>cur.includes(i.id));S.film={project:project(),refs:on.map(i=>i.id),tasks:on.map(i=>i.taskId)}}save();overOk=false;ask();
   });
   // "Generate video" on a film longer than one generation of the chosen model opens this window instead of the usual one.
   document.addEventListener("click",e=>{

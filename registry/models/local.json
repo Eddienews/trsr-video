@@ -1,0 +1,43 @@
+[
+  {
+    "id": "minimax-h3-local",
+    "label": "MiniMax H3 (this computer)",
+    "provider": "comfyui",
+    "apiModelId": "minimax-h3-ref2va",
+    "duration": {
+      "minS": 2,
+      "maxS": 10
+    },
+    "multiShot": true,
+    "audio": true,
+    "audioParam": null,
+    "inputs": {
+      "referenceImages": 9,
+      "firstFrame": false,
+      "lastFrame": false,
+      "refToken": "<Picture {n}>"
+    },
+    "maxPromptChars": 12000,
+    "sizes": {
+      "540p": {
+        "16:9": [960, 544],
+        "9:16": null,
+        "1:1": null
+      }
+    },
+    "pricing": {
+      "currency": "USD",
+      "perSecond": {
+        "540p": 0
+      },
+      "source": "measured",
+      "asOf": "2026-11-13",
+      "measured": [
+        { "resolution": "540p", "durationS": 8, "costUSD": 0, "date": "2026-11-12" }
+      ]
+    },
+    "notes": "Runs in ComfyUI on this computer (custom nodes ComfyUI-MiniMaxH3-Easy and ComfyUI-ClipProj): no key, no cost. Reference mode, up to 9 images named <Picture 1>... in the prompt. maxS 10: what an 8 GB GPU holds; an 8 s take at 540p took 15 to 20 minutes on an RTX 3070 Laptop (NorthWindLab test, 2026-11-12, 960x544). Longer films are made in parts. 9:16 and 1:1 not measured yet.",
+    "docsUrl": "https://github.com/nkxx188/ComfyUI-MiniMaxH3-Easy",
+    "verifiedAt": "2026-11-12"
+  }
+]

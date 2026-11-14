@@ -1,4 +1,11 @@
 {
+  "comfyui": {
+    "label": "This computer (ComfyUI)",
+    "envKey": "",
+    "endpoint": "http://127.0.0.1:8188",
+    "docsUrl": "https://github.com/nkxx188/ComfyUI-MiniMaxH3-Easy",
+    "capabilities": { "cancel": true, "reportsCost": true }
+  },
   "runware": {
     "label": "Runware",
     "envKey": "RUNWARE_API_KEY",

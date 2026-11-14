@@ -4,6 +4,7 @@ import {existsSync} from "node:fs";
 import {splitParts,partState,musicPrompt,imageTasks,imageSize,plain,total,promptFor,type PromptMode,validateForModel,estimateCost,pickSize,fitToModel,resolutionsFor,type State,type ModelEntry} from "@trsr-video/core";
 import type {EnvFile} from "./env";
 import type {Registry} from "./registry";
+import {keyless} from "./registry";
 import type {JobQueue,Job} from "./jobs";
 import {randomUUID} from "node:crypto";
 import {type Comfy,localKind} from "./local/comfy";
@@ -52,14 +53,15 @@ export function createApp(d:AppDeps){
       promptChars:pr.text.length,promptKind:pr.kind,prompt:pr.text,estimate,issues,fit,limits:{...lim,over}};
   }
 
+  const hasKey=(id:string)=>{const p=d.registry.providers[id];return keyless(p)||(!!p&&d.env.has(p.envKey))};
   app.get("/api/health",(_q,res)=>void res.json({ok:true,app:"trsr-video",version:d.version}));
   app.get("/api/models",(_q,res)=>void res.json({
-    models:d.registry.models.map(m=>({...m,keyConfigured:d.env.has(d.registry.providers[m.provider].envKey)})),
-    providers:Object.entries(d.registry.providers).map(([id,p])=>({id,label:p.label,canCancel:p.capabilities.cancel,...d.env.mask(p.envKey)})),
+    models:d.registry.models.map(m=>({...m,keyConfigured:hasKey(m.provider)})),
+    providers:Object.entries(d.registry.providers).map(([id,p])=>({id,label:p.label,canCancel:p.capabilities.cancel,...(keyless(p)?{configured:true,last4:"",local:true}:d.env.mask(p.envKey))})),
     limits:limits(),paused:d.queue.paused}));
 
   app.get("/api/settings",(_q,res)=>void res.json({
-    providers:Object.entries(d.registry.providers).map(([id,p])=>({id,label:p.label,envKey:p.envKey,keyHint:p.keyHint||"",docsUrl:p.docsUrl,...d.env.mask(p.envKey)})),limits:limits()}));
+    providers:Object.entries(d.registry.providers).filter(([_id,p])=>!keyless(p)).map(([id,p])=>({id,label:p.label,envKey:p.envKey,keyHint:p.keyHint||"",docsUrl:p.docsUrl,...d.env.mask(p.envKey)})),limits:limits()}));
   // The key goes into .env and is never sent back: the answer only says that it exists and how it ends.
   app.put("/api/settings/keys",(req,res)=>{
     const p=d.registry.providers[req.body?.provider],key=typeof req.body?.key==="string"?req.body.key.trim():null;
@@ -100,7 +102,7 @@ export function createApp(d:AppDeps){
     const b=req.body||{},m=model(b.modelId),S=b.state;
     if(!m||!isState(S))return void res.status(400).json({error:"badRequest"});
     const prov=d.registry.providers[m.provider];
-    if(!d.env.has(prov.envKey))return void res.status(409).json({error:"noKey",provider:m.provider});
+    if(!hasKey(m.provider))return void res.status(409).json({error:"noKey",provider:m.provider});
     const q=quote(S,m,String(b.resolution||""),b.audio!==false,pmode(b.promptMode));
     if(q.issues.some(i=>i.blocking)||!q.estimate||!q.size)return void res.status(422).json({error:"invalid",quote:q});
     if(b.confirmed!==true)return void res.status(400).json({error:"notConfirmed",quote:q});
@@ -180,7 +182,7 @@ export function createApp(d:AppDeps){
     const b=req.body||{},p=filmPlan(b);
     if(p.status!==200||!p.m||!p.quotes)return void res.status(p.status).json(p.body);
     const prov=d.registry.providers[p.m.provider];
-    if(!d.env.has(prov.envKey))return void res.status(409).json({error:"noKey",provider:p.m.provider});
+    if(!hasKey(p.m.provider))return void res.status(409).json({error:"noKey",provider:p.m.provider});
     if(p.quotes.some(q=>q.issues.some(i=>i.blocking)||!q.estimate||!q.size)||p.body.totalUSD===null)return void res.status(422).json({error:"invalid",plan:p.body});
     if(b.confirmed!==true)return void res.status(400).json({error:"notConfirmed",plan:p.body});
     if(typeof b.estimateUSD!=="number"||Math.abs(b.estimateUSD-(p.body.totalUSD as number))>0.00005)return void res.status(409).json({error:"estimateChanged",plan:p.body});
